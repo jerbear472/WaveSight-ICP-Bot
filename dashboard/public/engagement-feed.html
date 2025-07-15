@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Wave Feed - WaveSite</title>
+    <title>Content Wave Feed - WAVESITE</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="engagement-feed.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 </head>
 <body>
@@ -16,7 +17,20 @@
             <div class="header-content">
                 <div class="logo">
                     <a href="/" class="logo-link">
-                        <h1>🌊 WaveSite</h1>
+                        <div class="wave-logo">
+                            <svg width="30" height="30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="waveGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#0099cc;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#006699;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M10,50 Q30,20 50,50 T90,50" stroke="url(#waveGradient3)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                                <path d="M10,60 Q30,30 50,60 T90,60" stroke="url(#waveGradient3)" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+                            </svg>
+                        </div>
+                        <h1 class="brand-name">WAVESITE</h1>
                     </a>
                     <div class="page-info">
                         <h2>🌊 Content Wave Feed</h2>

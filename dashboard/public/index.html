@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WaveSite - Surfer Bot Intelligence Dashboard</title>
+    <title>WAVESITE - Surfer Bot Intelligence Dashboard</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
 </head>
@@ -14,10 +15,39 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <div class="logo">
-                    <h1>🌊 WaveSite</h1>
-                    <span class="tagline">Surfer Bot Intelligence Platform</span>
+                <div class="brand-section">
+                    <div class="logo-container">
+                        <div class="wave-logo">
+                            <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#0099cc;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#006699;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M10,50 Q30,20 50,50 T90,50" stroke="url(#waveGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                                <path d="M10,60 Q30,30 50,60 T90,60" stroke="url(#waveGradient)" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+                                <path d="M10,70 Q30,40 50,70 T90,70" stroke="url(#waveGradient)" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
+                            </svg>
+                        </div>
+                        <h1 class="brand-name">WAVESITE</h1>
+                    </div>
+                    <div class="tagline-section">
+                        <p class="main-tagline">See What's Coming Before it Hits...</p>
+                        <p class="sub-tagline">Real-time trending analytics powered by Surfer Bot data</p>
+                        <p class="description">Track viral content, analyze sentiment patterns, and discover emerging trends across digital platforms with advanced AI-powered insights.</p>
+                    </div>
                 </div>
+                <nav class="main-nav">
+                    <a href="#trends" class="nav-item active">Trends</a>
+                    <a href="#sentiment" class="nav-item">Sentiment</a>
+                    <a href="#cultural" class="nav-item">Cultural Compass</a>
+                    <a href="#alerts" class="nav-item">Alerts</a>
+                    <a href="#about" class="nav-item">About Us</a>
+                    <a href="#settings" class="nav-item">Settings</a>
+                    <a href="#developers" class="nav-item">For Developers</a>
+                </nav>
                 <div class="header-controls">
                     <div class="time-range-selector">
                         <button class="time-btn active" data-range="1h">1H</button>
@@ -26,7 +56,7 @@
                         <button class="time-btn" data-range="7d">7D</button>
                     </div>
                     <button class="refresh-btn" onclick="refreshData()">
-                        <span class="icon">🔄</span>
+                        <span class="icon">⟳</span>
                         Refresh
                     </button>
                 </div>
