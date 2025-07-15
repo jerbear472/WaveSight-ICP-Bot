@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Live View - ICPScope</title>
+    <link rel="stylesheet" href="bot-live-view.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>🤖 Bot Live View</h1>
+                    <span class="subtitle">Watch your ICP bot in action</span>
+                </div>
+                <div class="header-right">
+                    <div class="status-indicator" id="botStatus">
+                        <span class="status-dot offline"></span>
+                        <span class="status-text">Bot Offline</span>
+                    </div>
+                    <button class="btn btn-primary" id="startBotBtn" onclick="startBot()">
+                        ▶️ Start Bot Session
+                    </button>
+                    <button class="btn btn-secondary" id="stopBotBtn" onclick="stopBot()" style="display: none;">
+                        ⏹️ Stop Bot
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Bot Configuration Panel -->
+            <div class="config-panel" id="configPanel">
+                <h3>🎯 Bot Configuration</h3>
+                <div class="config-grid">
+                    <div class="config-group">
+                        <label>ICP Persona:</label>
+                        <select id="personaSelect">
+                            <option value="gen_z_tech_enthusiast">👩‍💻 Gen Z Tech Enthusiast</option>
+                            <option value="millennial_entrepreneur">🚀 Millennial Entrepreneur</option>
+                            <option value="crypto_investor">₿ Crypto Investor</option>
+                            <option value="mindfulness_seeker">🧘 Mindfulness Seeker</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label>Platform:</label>
+                        <select id="platformSelect">
+                            <option value="instagram">📱 Instagram</option>
+                            <option value="tiktok">🎵 TikTok</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label>Session Duration:</label>
+                        <select id="durationSelect">
+                            <option value="120000">2 minutes (demo)</option>
+                            <option value="300000">5 minutes</option>
+                            <option value="600000">10 minutes</option>
+                            <option value="1800000">30 minutes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Bot View -->
+            <div class="bot-view-container">
+                <!-- Session Progress -->
+                <div class="session-progress" id="sessionProgress" style="display: none;">
+                    <div class="progress-header">
+                        <span class="session-info">Session: <span id="sessionId">-</span></span>
+                        <span class="timer" id="sessionTimer">00:00</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Bot Screen Simulation -->
+                <div class="bot-screen" id="botScreen">
+                    <div class="bot-screen-placeholder">
+                        <div class="phone-mockup">
+                            <div class="phone-screen">
+                                <div class="screen-content" id="screenContent">
+                                    <div class="welcome-message">
+                                        <h3>🤖 Ready to Start</h3>
+                                        <p>Configure your bot settings and click "Start Bot Session" to watch your ICP bot discover content in real-time.</p>
+                                        <div class="feature-list">
+                                            <div class="feature">📱 Live content discovery</div>
+                                            <div class="feature">🎯 Persona-driven interactions</div>
+                                            <div class="feature">⏱️ Real-time engagement tracking</div>
+                                            <div class="feature">📊 Live analytics feed</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Activity Feed -->
+                <div class="activity-feed" id="activityFeed">
+                    <div class="feed-header">
+                        <h3>🔴 Live Activity</h3>
+                        <span class="activity-count">0 actions</span>
+                    </div>
+                    <div class="feed-content" id="feedContent">
+                        <div class="feed-placeholder">
+                            <p>Bot activity will appear here when session starts...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persona Behavior Panel -->
+            <div class="behavior-panel" id="behaviorPanel" style="display: none;">
+                <h3>🧠 Persona Behavior</h3>
+                <div class="behavior-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Interest Level</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="interestLevel"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Engagement Rate</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="engagementRate"></div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Scroll Speed</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" id="scrollSpeed"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="persona-traits" id="personaTraits">
+                    <!-- Traits will be populated based on selected persona -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Summary Modal -->
+        <div class="modal-overlay" id="summaryModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📊 Session Complete</h3>
+                    <button class="modal-close" onclick="closeSummaryModal()">×</button>
+                </div>
+                <div class="modal-body" id="summaryContent">
+                    <!-- Session summary will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="viewEngagementFeed()">
+                        📱 View Engagement Feed
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeSummaryModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="bot-live-view.js"></script>
+</body>
+</html>
