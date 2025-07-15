@@ -4,46 +4,18 @@ services:
     name: icpscope-dashboard
     env: node
     plan: starter
-    buildCommand: npm install && npm run build
+    buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: DASHBOARD_PORT
         value: 10000
       - key: MAX_CONCURRENT_BOTS
         value: 3
       - key: BOT_TIMEOUT_MS
         value: 300000
-      - key: LOG_LEVEL
-        value: info
-    
-  # Background Bot Orchestrator
-  - type: worker
-    name: icpscope-orchestrator
-    env: node
-    plan: starter
-    buildCommand: npm install
-    startCommand: node bot-engine/orchestrator.js
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MAX_CONCURRENT_BOTS
-        value: 2
-      - key: BOT_TIMEOUT_MS
-        value: 180000
-      - key: LOG_LEVEL
-        value: info
-
-  # Analytics Processor
-  - type: worker
-    name: icpscope-analytics
-    env: node
-    plan: starter
-    buildCommand: npm install
-    startCommand: node analytics/trend-processor.js
-    envVars:
-      - key: NODE_ENV
-        value: production
       - key: LOG_LEVEL
         value: info

@@ -86,14 +86,13 @@ class BotBase {
       this.browser = await chromium.launch(launchOptions);
 
       // Create context with device emulation
-      const userAgent = new UserAgent({ 
-        deviceCategory: this.icpProfile.deviceType.includes('mobile') ? 'mobile' : 'desktop',
-        platform: this.icpProfile.deviceInfo.platform 
-      });
+      const userAgentString = this.icpProfile.deviceType.includes('mobile')
+        ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+        : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36';
 
       this.context = await this.browser.newContext({
-        userAgent: userAgent.toString(),
-        viewport: this.icpProfile.deviceInfo.screenSize,
+        userAgent: userAgentString,
+        viewport: this.icpProfile.deviceInfo?.screenSize || { width: 1920, height: 1080 },
         deviceScaleFactor: 2,
         hasTouch: this.icpProfile.deviceType.includes('mobile'),
         isMobile: this.icpProfile.deviceType.includes('mobile'),

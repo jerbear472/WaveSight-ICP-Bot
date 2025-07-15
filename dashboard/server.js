@@ -17,7 +17,7 @@ const SupabaseLogger = require('../data-logger/supabase-logger');
 class DashboardServer {
   constructor() {
     this.app = express();
-    this.port = process.env.DASHBOARD_PORT || 3000;
+    this.port = process.env.PORT || process.env.DASHBOARD_PORT || 3000;
     
     // Initialize services
     this.orchestrator = new BotOrchestrator();

@@ -66,8 +66,34 @@ class InstagramBot extends BotBase {
         await this.sleep(1000);
       }
 
-      // Wait for feed to load
-      await this.page.waitForSelector(this.selectors.feedPost, { timeout: 15000 });
+      // Wait for feed to load - try multiple selectors
+      const feedSelectors = [
+        'article[role="presentation"]',
+        'article',
+        'div[role="main"] article',
+        'main article'
+      ];
+      
+      let feedFound = false;
+      for (const selector of feedSelectors) {
+        try {
+          await this.page.waitForSelector(selector, { timeout: 5000 });
+          this.logger.info(`Found feed content with selector: ${selector}`);
+          feedFound = true;
+          break;
+        } catch (e) {
+          this.logger.warn(`Selector not found: ${selector}`);
+        }
+      }
+      
+      if (!feedFound) {
+        // Check if we're logged in at all
+        const usernameInput = await this.page.locator('input[name="username"]').count();
+        if (usernameInput > 0) {
+          throw new Error('Not logged in - username input found');
+        }
+        this.logger.warn('No specific feed selectors found, but appears to be logged in');
+      }
       
       this.logger.info('Successfully navigated to Instagram feed');
       return true;
