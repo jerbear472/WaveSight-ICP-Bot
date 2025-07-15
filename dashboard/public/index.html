@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICPScope - ICP Bot Intelligence Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>ICPScope</h1>
+                    <span class="tagline">ICP Bot Intelligence Platform</span>
+                </div>
+                <div class="header-controls">
+                    <div class="time-range-selector">
+                        <button class="time-btn active" data-range="1h">1H</button>
+                        <button class="time-btn" data-range="6h">6H</button>
+                        <button class="time-btn" data-range="24h">24H</button>
+                        <button class="time-btn" data-range="7d">7D</button>
+                    </div>
+                    <button class="refresh-btn" onclick="refreshData()">
+                        <span class="icon">🔄</span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Cards -->
+            <section class="overview-section">
+                <div class="overview-grid">
+                    <div class="overview-card">
+                        <div class="card-header">
+                            <h3>Total Impressions</h3>
+                            <span class="icon">👁️</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value" id="totalImpressions">-</div>
+                            <div class="metric-change" id="impressionsChange">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-header">
+                            <h3>Total Engagements</h3>
+                            <span class="icon">💬</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value" id="totalEngagements">-</div>
+                            <div class="metric-change" id="engagementsChange">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-header">
+                            <h3>Viral Content</h3>
+                            <span class="icon">🔥</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value" id="viralContent">-</div>
+                            <div class="metric-change" id="viralChange">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="card-header">
+                            <h3>Breakout Creators</h3>
+                            <span class="icon">⭐</span>
+                        </div>
+                        <div class="card-content">
+                            <div class="metric-value" id="breakoutCreators">-</div>
+                            <div class="metric-change" id="creatorsChange">-</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="charts-grid">
+                    <!-- Engagement Timeline -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Engagement Timeline</h3>
+                            <div class="chart-controls">
+                                <button class="chart-btn active" data-chart="impressions">Impressions</button>
+                                <button class="chart-btn" data-chart="engagements">Engagements</button>
+                            </div>
+                        </div>
+                        <div class="chart-content">
+                            <canvas id="engagementChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Platform Distribution -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Platform Distribution</h3>
+                        </div>
+                        <div class="chart-content">
+                            <canvas id="platformChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Tables Section -->
+            <section class="tables-section">
+                <div class="tables-grid">
+                    <!-- Viral Content Table -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>🔥 Viral Content</h3>
+                            <div class="table-controls">
+                                <button class="export-btn" onclick="exportData('viral')">Export</button>
+                            </div>
+                        </div>
+                        <div class="table-content">
+                            <div class="table-scroll">
+                                <table id="viralTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Content</th>
+                                            <th>Creator</th>
+                                            <th>Platform</th>
+                                            <th>Virality Score</th>
+                                            <th>Engagement Rate</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="viralTableBody">
+                                        <tr>
+                                            <td colspan="6" class="loading">Loading viral content...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breakout Creators Table -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>⭐ Breakout Creators</h3>
+                            <div class="table-controls">
+                                <button class="export-btn" onclick="exportData('creators')">Export</button>
+                            </div>
+                        </div>
+                        <div class="table-content">
+                            <div class="table-scroll">
+                                <table id="creatorsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Creator</th>
+                                            <th>Platform</th>
+                                            <th>Growth Rate</th>
+                                            <th>Engagement Rate</th>
+                                            <th>Momentum</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="creatorsTableBody">
+                                        <tr>
+                                            <td colspan="6" class="loading">Loading breakout creators...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trending Hashtags Table -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>#️⃣ Trending Hashtags</h3>
+                            <div class="table-controls">
+                                <button class="export-btn" onclick="exportData('hashtags')">Export</button>
+                            </div>
+                        </div>
+                        <div class="table-content">
+                            <div class="table-scroll">
+                                <table id="hashtagsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Hashtag</th>
+                                            <th>Mentions</th>
+                                            <th>Engagements</th>
+                                            <th>Trending Score</th>
+                                            <th>Momentum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hashtagsTableBody">
+                                        <tr>
+                                            <td colspan="5" class="loading">Loading trending hashtags...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anomalies Table -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>🚨 Anomalies</h3>
+                            <div class="table-controls">
+                                <button class="export-btn" onclick="exportData('anomalies')">Export</button>
+                            </div>
+                        </div>
+                        <div class="table-content">
+                            <div class="table-scroll">
+                                <table id="anomaliesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Severity</th>
+                                            <th>Description</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="anomaliesTableBody">
+                                        <tr>
+                                            <td colspan="4" class="loading">Loading anomalies...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bot Control Section -->
+            <section class="bot-control-section">
+                <div class="bot-control-card">
+                    <div class="bot-control-header">
+                        <h3>🤖 Bot Control</h3>
+                        <div class="bot-status" id="botStatus">
+                            <span class="status-indicator"></span>
+                            <span class="status-text">Ready</span>
+                        </div>
+                    </div>
+                    <div class="bot-control-content">
+                        <div class="bot-controls">
+                            <div class="control-group">
+                                <label for="profileType">ICP Profile:</label>
+                                <select id="profileType">
+                                    <option value="gen_z_tech_enthusiast">Gen Z Tech Enthusiast</option>
+                                    <option value="millennial_professional">Millennial Professional</option>
+                                    <option value="fashion_beauty_enthusiast">Fashion & Beauty Enthusiast</option>
+                                    <option value="fitness_health_focused">Fitness & Health Focused</option>
+                                    <option value="parent_family_oriented">Parent & Family Oriented</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="platform">Platform:</label>
+                                <select id="platform">
+                                    <option value="instagram">Instagram</option>
+                                    <option value="tiktok">TikTok</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="duration">Duration:</label>
+                                <select id="duration">
+                                    <option value="300000">5 minutes</option>
+                                    <option value="600000">10 minutes</option>
+                                    <option value="1800000">30 minutes</option>
+                                    <option value="3600000">1 hour</option>
+                                </select>
+                            </div>
+                            <button class="start-bot-btn" onclick="startBot()">Start Bot Session</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2024 ICPScope. Advanced ICP Bot Intelligence Platform.</p>
+                <p>Last updated: <span id="lastUpdated">-</span></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
