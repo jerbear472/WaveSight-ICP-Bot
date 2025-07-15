@@ -537,6 +537,71 @@ tr:hover {
   cursor: not-allowed;
 }
 
+/* Platform Status */
+.platform-status {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.platform-status h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.platform-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.platform-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.platform-indicator:hover {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: var(--primary-color);
+}
+
+.platform-icon {
+  font-size: 1.25rem;
+}
+
+.platform-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 80px;
+}
+
+.platform-account {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  flex: 1;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status-dot.active {
+  background: var(--success-color);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+  animation: pulse 2s infinite;
+}
+
 /* Footer */
 .footer {
   background: var(--gradient-dark);

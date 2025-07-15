@@ -64,10 +64,43 @@ class TikTokBot extends BotBase {
       // Handle any popups or cookie consent
       await this.handleInitialPopups();
 
-      // Wait for video feed to load
-      await this.page.waitForSelector(this.selectors.videoContainer, { 
-        timeout: 20000 
-      });
+      // Wait for video feed to load - try multiple selectors
+      const feedSelectors = [
+        'div[data-e2e="recommend-list-item-container"]',
+        'div[data-e2e="recommend-list-item"]',
+        'div[data-e2e="video-item"]',
+        'div[class*="video-feed"]',
+        'div[class*="recommend"]',
+        'video'
+      ];
+      
+      let feedFound = false;
+      for (const selector of feedSelectors) {
+        try {
+          await this.page.waitForSelector(selector, { timeout: 5000 });
+          this.logger.info(`Found TikTok feed content with selector: ${selector}`);
+          feedFound = true;
+          break;
+        } catch (e) {
+          this.logger.warn(`Selector not found: ${selector}`);
+        }
+      }
+      
+      if (!feedFound) {
+        // Check if we're logged in at all
+        const loginButton = await this.page.locator('[data-e2e="login-button"]').count();
+        if (loginButton > 0) {
+          throw new Error('Not logged in - login button found');
+        }
+        
+        // Check for profile icon (means logged in)
+        const profileIcon = await this.page.locator('[data-e2e="profile-icon"]').count();
+        if (profileIcon > 0) {
+          this.logger.warn('Logged in but no specific feed selectors found');
+        } else {
+          this.logger.warn('No specific feed selectors found and unclear login state');
+        }
+      }
       
       this.logger.info('Successfully navigated to TikTok feed');
       return true;

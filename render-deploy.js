@@ -53,12 +53,16 @@ app.get('/api/dashboard-data', async (req, res) => {
           instagram: {
             impressions: 7832,
             engagements: 1234,
-            avgViewDuration: 8500
+            avgViewDuration: 8500,
+            status: 'active',
+            account: '@mindmatterlife'
           },
           tiktok: {
             impressions: 4711,
             engagements: 642,
-            avgViewDuration: 12300
+            avgViewDuration: 12300,
+            status: 'active',
+            account: '@mindmatterlife'
           }
         }
       },
@@ -125,15 +129,45 @@ app.get('/api/dashboard-data', async (req, res) => {
   }
 });
 
+// Platform status endpoint
+app.get('/api/platforms', async (req, res) => {
+  try {
+    const platforms = {
+      instagram: {
+        connected: true,
+        account: '@mindmatterlife',
+        status: 'active',
+        lastActive: new Date().toISOString(),
+        sessionHealth: 'good'
+      },
+      tiktok: {
+        connected: true,
+        account: '@mindmatterlife', 
+        status: 'active',
+        lastActive: new Date().toISOString(),
+        sessionHealth: 'good'
+      }
+    };
+    
+    res.json(platforms);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Bot control endpoint
 app.post('/api/bot/start', async (req, res) => {
   try {
     const { profileType, platform, duration } = req.body;
     
+    const platformAccount = platform === 'instagram' ? '@mindmatterlife' : '@mindmatterlife';
+    
     res.json({
       sessionId: 'demo-session-' + Date.now(),
-      message: `Demo bot session started for ${profileType} on ${platform}`,
-      status: 'running'
+      message: `Bot session started for ${profileType} on ${platform} using ${platformAccount}`,
+      status: 'running',
+      platform: platform,
+      account: platformAccount
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
