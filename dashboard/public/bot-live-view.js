@@ -21,11 +21,11 @@ class BotLiveViewer {
         this.contentItems = [];
         this.currentContentIndex = 0;
         
-        // Persona configurations
+        // Wave Rider configurations
         this.personas = {
             gen_z_tech_enthusiast: {
-                name: '👩‍💻 Gen Z Tech Enthusiast',
-                traits: ['Tech-savvy', 'AI-interested', 'Startup-focused', 'Fast scroller'],
+                name: '👩‍💻 Tech Wave Rider',
+                traits: ['Tech-savvy', 'AI-interested', 'Startup-focused', 'Fast surfer'],
                 scrollSpeed: 85,
                 engagementRate: 75,
                 interestKeywords: ['AI', 'tech', 'startup', 'crypto', 'NFT', 'Web3'],
@@ -35,8 +35,8 @@ class BotLiveViewer {
                 shareChance: 0.05
             },
             millennial_entrepreneur: {
-                name: '🚀 Millennial Entrepreneur',
-                traits: ['Business-minded', 'Growth-focused', 'Leadership', 'Strategic'],
+                name: '🚀 Business Wave Rider',
+                traits: ['Business-minded', 'Growth-focused', 'Leadership', 'Strategic surfer'],
                 scrollSpeed: 60,
                 engagementRate: 85,
                 interestKeywords: ['business', 'entrepreneur', 'growth', 'leadership', 'productivity'],
@@ -46,8 +46,8 @@ class BotLiveViewer {
                 shareChance: 0.08
             },
             crypto_investor: {
-                name: '₿ Crypto Investor',
-                traits: ['Investment-focused', 'Risk-aware', 'Market-savvy', 'Detail-oriented'],
+                name: '₿ Crypto Wave Rider',
+                traits: ['Investment-focused', 'Risk-aware', 'Market-savvy', 'Detail-oriented surfer'],
                 scrollSpeed: 45,
                 engagementRate: 90,
                 interestKeywords: ['crypto', 'bitcoin', 'ethereum', 'DeFi', 'trading', 'investment'],
@@ -57,8 +57,8 @@ class BotLiveViewer {
                 shareChance: 0.1
             },
             mindfulness_seeker: {
-                name: '🧘 Mindfulness Seeker',
-                traits: ['Wellness-focused', 'Thoughtful', 'Mindful', 'Balanced'],
+                name: '🧘 Mindful Wave Rider',
+                traits: ['Wellness-focused', 'Thoughtful', 'Mindful', 'Balanced surfer'],
                 scrollSpeed: 35,
                 engagementRate: 70,
                 interestKeywords: ['mindfulness', 'wellness', 'meditation', 'health', 'balance'],
@@ -73,7 +73,7 @@ class BotLiveViewer {
     }
 
     initialize() {
-        console.log('🤖 Initializing Bot Live Viewer...');
+        console.log('🏄‍♀️ Initializing Surfer Bot Live Viewer...');
         this.setupEventListeners();
         this.generateMockContent();
         this.updatePersonaDisplay();
@@ -174,7 +174,7 @@ class BotLiveViewer {
     async startBot() {
         if (this.isRunning) return;
 
-        console.log('🚀 Starting bot session...');
+        console.log('🏄‍♀️ Starting Surfer Bot session...');
         
         this.isRunning = true;
         this.sessionId = 'session_' + Date.now();
@@ -184,7 +184,7 @@ class BotLiveViewer {
         this.currentContentIndex = 0;
 
         // Update UI
-        this.updateStatus('running', 'Bot Running');
+        this.updateStatus('running', 'Surfer Bot Surfing');
         this.showSessionProgress();
         this.hideConfigPanel();
         this.showBehaviorPanel();
@@ -197,7 +197,7 @@ class BotLiveViewer {
         this.simulateBotActivity();
 
         // Log start
-        this.addActivityLog('🚀', 'Bot session started', `${this.personas[this.currentPersona].name} on ${this.currentPlatform}`);
+        this.addActivityLog('🏄‍♀️', 'Surfing session started', `${this.personas[this.currentPersona].name} on ${this.currentPlatform}`);
 
         // Auto-stop after duration
         setTimeout(() => {
@@ -210,7 +210,7 @@ class BotLiveViewer {
     stopBot() {
         if (!this.isRunning) return;
 
-        console.log('⏹️ Stopping bot session...');
+        console.log('⏹️ Stopping Surfer Bot session...');
         
         this.isRunning = false;
         
@@ -219,13 +219,13 @@ class BotLiveViewer {
         if (this.progressTimer) clearInterval(this.progressTimer);
         
         // Update UI
-        this.updateStatus('offline', 'Bot Offline');
+        this.updateStatus('offline', 'Surfer Bot Offline');
         this.hideSessionProgress();
         this.showConfigPanel();
         this.hideBehaviorPanel();
         
         // Log stop
-        this.addActivityLog('⏹️', 'Bot session ended', `Total actions: ${this.activityCount}`);
+        this.addActivityLog('⏹️', 'Surfing session ended', `Total actions: ${this.activityCount}`);
         
         // Show session summary
         setTimeout(() => {
@@ -514,12 +514,12 @@ class BotLiveViewer {
                     <p><strong>❤️ Liked:</strong> ${likedContent}</p>
                     <p><strong>💬 Commented:</strong> ${commentedContent}</p>
                     <p><strong>📤 Shared:</strong> ${sharedContent}</p>
-                    <p><strong>🤖 Persona:</strong> ${this.personas[this.currentPersona].name}</p>
+                    <p><strong>🏄‍♀️ Wave Rider:</strong> ${this.personas[this.currentPersona].name}</p>
                 </div>
             </div>
             <div style="margin-top: 1.5rem;">
                 <h4>🎯 Key Insights</h4>
-                <p>Your ${this.personas[this.currentPersona].name} bot discovered ${this.currentContentIndex} pieces of content and engaged with ${Math.round(engagementRate)}% of them, demonstrating typical behavior patterns for this persona.</p>
+                <p>Your ${this.personas[this.currentPersona].name} surfed through ${this.currentContentIndex} pieces of content and engaged with ${Math.round(engagementRate)}% of them, demonstrating typical surfing patterns for this Wave Rider profile.</p>
             </div>
         `;
 

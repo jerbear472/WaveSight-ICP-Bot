@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Live View - ICPScope</title>
+    <title>Surfer Bot Live View - WaveSite</title>
     <link rel="stylesheet" href="bot-live-view.css">
 </head>
 <body>
@@ -12,19 +12,24 @@
         <header class="dashboard-header">
             <div class="header-content">
                 <div class="header-left">
-                    <h1>🤖 Bot Live View</h1>
-                    <span class="subtitle">Watch your ICP bot in action</span>
+                    <a href="/" class="logo-link">
+                        <h1>🌊 WaveSite</h1>
+                    </a>
+                    <div class="page-info">
+                        <h2>🏄‍♀️ Surfer Bot Live View</h2>
+                        <span class="subtitle">Watch your Surfer Bot surf content in real-time</span>
+                    </div>
                 </div>
                 <div class="header-right">
                     <div class="status-indicator" id="botStatus">
                         <span class="status-dot offline"></span>
-                        <span class="status-text">Bot Offline</span>
+                        <span class="status-text">Surfer Bot Offline</span>
                     </div>
                     <button class="btn btn-primary" id="startBotBtn" onclick="startBot()">
-                        ▶️ Start Bot Session
+                        🏄‍♀️ Start Surfing Session
                     </button>
                     <button class="btn btn-secondary" id="stopBotBtn" onclick="stopBot()" style="display: none;">
-                        ⏹️ Stop Bot
+                        ⏹️ Stop Surfing
                     </button>
                 </div>
             </div>
@@ -32,17 +37,17 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Bot Configuration Panel -->
+            <!-- Surfer Bot Configuration Panel -->
             <div class="config-panel" id="configPanel">
-                <h3>🎯 Bot Configuration</h3>
+                <h3>🎯 Surfer Bot Configuration</h3>
                 <div class="config-grid">
                     <div class="config-group">
-                        <label>ICP Persona:</label>
+                        <label>Surfer Profile:</label>
                         <select id="personaSelect">
-                            <option value="gen_z_tech_enthusiast">👩‍💻 Gen Z Tech Enthusiast</option>
-                            <option value="millennial_entrepreneur">🚀 Millennial Entrepreneur</option>
-                            <option value="crypto_investor">₿ Crypto Investor</option>
-                            <option value="mindfulness_seeker">🧘 Mindfulness Seeker</option>
+                            <option value="gen_z_tech_enthusiast">👩‍💻 Tech Wave Rider</option>
+                            <option value="millennial_entrepreneur">🚀 Business Wave Rider</option>
+                            <option value="crypto_investor">₿ Crypto Wave Rider</option>
+                            <option value="mindfulness_seeker">🧘 Mindful Wave Rider</option>
                         </select>
                     </div>
                     <div class="config-group">
@@ -84,13 +89,13 @@
                             <div class="phone-screen">
                                 <div class="screen-content" id="screenContent">
                                     <div class="welcome-message">
-                                        <h3>🤖 Ready to Start</h3>
-                                        <p>Configure your bot settings and click "Start Bot Session" to watch your ICP bot discover content in real-time.</p>
+                                        <h3>🏄‍♀️ Ready to Surf</h3>
+                                        <p>Configure your Surfer Bot settings and click "Start Surfing Session" to watch your bot ride the content waves in real-time.</p>
                                         <div class="feature-list">
-                                            <div class="feature">📱 Live content discovery</div>
-                                            <div class="feature">🎯 Persona-driven interactions</div>
+                                            <div class="feature">🌊 Live content surfing</div>
+                                            <div class="feature">🎯 Wave Rider personality-driven interactions</div>
                                             <div class="feature">⏱️ Real-time engagement tracking</div>
-                                            <div class="feature">📊 Live analytics feed</div>
+                                            <div class="feature">📊 Live surfing analytics</div>
                                         </div>
                                     </div>
                                 </div>
@@ -107,15 +112,15 @@
                     </div>
                     <div class="feed-content" id="feedContent">
                         <div class="feed-placeholder">
-                            <p>Bot activity will appear here when session starts...</p>
+                            <p>Surfer Bot activity will appear here when session starts...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Persona Behavior Panel -->
+            <!-- Wave Rider Behavior Panel -->
             <div class="behavior-panel" id="behaviorPanel" style="display: none;">
-                <h3>🧠 Persona Behavior</h3>
+                <h3>🧠 Wave Rider Behavior</h3>
                 <div class="behavior-stats">
                     <div class="stat-item">
                         <span class="stat-label">Interest Level</span>
