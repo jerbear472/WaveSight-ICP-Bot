@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Simulation Dashboard - ICPScope</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="bot-dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>ICPScope</h1>
+                    <span class="tagline">Bot Simulation Dashboard</span>
+                </div>
+                <div class="header-controls">
+                    <div class="global-status">
+                        <span class="status-label">System Status:</span>
+                        <span class="status-indicator" id="globalStatus">
+                            <span class="status-dot active"></span>
+                            <span class="status-text">Active</span>
+                        </span>
+                    </div>
+                    <button class="emergency-stop-btn" onclick="emergencyStop()">
+                        🛑 Emergency Stop All
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Bot Status Grid -->
+            <section class="bot-status-section">
+                <h2>🤖 Active Bot Instances</h2>
+                <div class="bot-grid">
+                    
+                    <!-- Instagram Bot -->
+                    <div class="bot-card" id="instagramBot">
+                        <div class="bot-header">
+                            <div class="bot-platform">
+                                <span class="platform-icon">📱</span>
+                                <div class="platform-info">
+                                    <h3>Instagram Bot</h3>
+                                    <span class="bot-account">@mindmatterlife</span>
+                                </div>
+                            </div>
+                            <div class="bot-status-indicator">
+                                <span class="status-dot idle" id="igStatusDot"></span>
+                                <span class="status-text" id="igStatusText">Idle</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Session Time</span>
+                                <span class="metric-value" id="igSessionTime">00:00:00</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Content Viewed</span>
+                                <span class="metric-value" id="igContentCount">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Engagements</span>
+                                <span class="metric-value" id="igEngagements">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Trends Found</span>
+                                <span class="metric-value trending" id="igTrends">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-activity">
+                            <div class="activity-header">
+                                <span class="activity-label">Current Activity:</span>
+                                <span class="activity-status" id="igActivity">Waiting for command</span>
+                            </div>
+                            <div class="activity-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="igProgress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-controls">
+                            <button class="start-btn" onclick="startBot('instagram')" id="igStartBtn">
+                                ▶️ Start Session
+                            </button>
+                            <button class="stop-btn" onclick="stopBot('instagram')" id="igStopBtn" disabled>
+                                ⏹️ Stop
+                            </button>
+                            <button class="config-btn" onclick="configureBot('instagram')">
+                                ⚙️ Configure
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- TikTok Bot -->
+                    <div class="bot-card" id="tiktokBot">
+                        <div class="bot-header">
+                            <div class="bot-platform">
+                                <span class="platform-icon">🎵</span>
+                                <div class="platform-info">
+                                    <h3>TikTok Bot</h3>
+                                    <span class="bot-account">@mindmatterlife</span>
+                                </div>
+                            </div>
+                            <div class="bot-status-indicator">
+                                <span class="status-dot idle" id="ttStatusDot"></span>
+                                <span class="status-text" id="ttStatusText">Idle</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Session Time</span>
+                                <span class="metric-value" id="ttSessionTime">00:00:00</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Videos Viewed</span>
+                                <span class="metric-value" id="ttContentCount">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Engagements</span>
+                                <span class="metric-value" id="ttEngagements">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Viral Found</span>
+                                <span class="metric-value trending" id="ttTrends">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-activity">
+                            <div class="activity-header">
+                                <span class="activity-label">Current Activity:</span>
+                                <span class="activity-status" id="ttActivity">Waiting for command</span>
+                            </div>
+                            <div class="activity-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="ttProgress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-controls">
+                            <button class="start-btn" onclick="startBot('tiktok')" id="ttStartBtn">
+                                ▶️ Start Session
+                            </button>
+                            <button class="stop-btn" onclick="stopBot('tiktok')" id="ttStopBtn" disabled>
+                                ⏹️ Stop
+                            </button>
+                            <button class="config-btn" onclick="configureBot('tiktok')">
+                                ⚙️ Configure
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Real-time Activity Feed -->
+            <section class="activity-feed-section">
+                <div class="activity-header">
+                    <h2>🔴 Live Activity Feed</h2>
+                    <div class="feed-controls">
+                        <button class="feed-btn active" onclick="filterFeed('all')">All</button>
+                        <button class="feed-btn" onclick="filterFeed('trending')">🔥 Trending</button>
+                        <button class="feed-btn" onclick="filterFeed('errors')">⚠️ Errors</button>
+                        <button class="clear-btn" onclick="clearFeed()">Clear</button>
+                    </div>
+                </div>
+                <div class="activity-feed" id="activityFeed">
+                    <div class="feed-item welcome">
+                        <div class="feed-timestamp">System Ready</div>
+                        <div class="feed-content">
+                            <span class="feed-icon">🚀</span>
+                            <span class="feed-message">Bot Simulation Dashboard initialized. Ready to monitor social media trends.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Session Logs -->
+            <section class="session-logs-section">
+                <div class="logs-header">
+                    <h2>📊 Session Logs & Audit Trail</h2>
+                    <div class="logs-controls">
+                        <select id="logPlatform">
+                            <option value="all">All Platforms</option>
+                            <option value="instagram">📱 Instagram</option>
+                            <option value="tiktok">🎵 TikTok</option>
+                        </select>
+                        <button class="export-btn" onclick="exportLogs()">📥 Export</button>
+                    </div>
+                </div>
+                <div class="logs-table-container">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Platform</th>
+                                <th>Action</th>
+                                <th>Content ID</th>
+                                <th>Creator</th>
+                                <th>Metrics</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTableBody">
+                            <tr class="log-entry system">
+                                <td class="timestamp">12:00:00</td>
+                                <td class="platform">System</td>
+                                <td class="action">Initialize</td>
+                                <td class="content-id">SYS-001</td>
+                                <td class="creator">-</td>
+                                <td class="metrics">-</td>
+                                <td class="status success">Ready</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>⚙️ Bot Configuration</h3>
+                <button class="modal-close" onclick="closeConfigModal()">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="config-section">
+                    <label>Session Duration (minutes):</label>
+                    <input type="number" id="sessionDuration" value="5" min="1" max="60">
+                </div>
+                <div class="config-section">
+                    <label>Scroll Speed:</label>
+                    <select id="scrollSpeed">
+                        <option value="slow">Slow (Human-like)</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="fast">Fast (Tech-savvy)</option>
+                    </select>
+                </div>
+                <div class="config-section">
+                    <label>Engagement Rate:</label>
+                    <select id="engagementRate">
+                        <option value="low">Low (Observer)</option>
+                        <option value="medium">Medium</option>
+                        <option value="high" selected>High (Active User)</option>
+                    </select>
+                </div>
+                <div class="config-section">
+                    <label>Trend Sensitivity:</label>
+                    <select id="trendSensitivity">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high" selected>High</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="save-btn" onclick="saveConfiguration()">Save Configuration</button>
+                <button class="cancel-btn" onclick="closeConfigModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="bot-dashboard.js"></script>
+</body>
+</html>
