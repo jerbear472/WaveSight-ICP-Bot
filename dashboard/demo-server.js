@@ -217,6 +217,93 @@ class DemoDashboardServer {
       });
     });
 
+    // Engagement Feed API (demo)
+    this.app.get('/api/engagement-feed', (req, res) => {
+      const mockData = [
+        {
+          id: 'demo_1',
+          platform: 'instagram',
+          contentType: 'video',
+          creator: 'techguru22',
+          caption: 'This AI tool just changed everything for entrepreneurs! 🤖',
+          hashtags: ['#AI', '#startup', '#productivity'],
+          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          likes: 45200,
+          dwellTimeMs: 12000,
+          watchCompletionPercent: 85,
+          interactions: ['liked', 'commented'],
+          isTrending: true,
+          isBranded: false,
+          isSponsored: false,
+          engagementScore: 87,
+          viralityScore: 73,
+          mediaUrl: 'https://via.placeholder.com/400x300/1a1e2e/00d4ff?text=AI+Tool',
+          thumbnailUrl: 'https://via.placeholder.com/80x80/1a1e2e/00d4ff?text=I',
+          scrollDepth: 75,
+          detectedBrands: []
+        },
+        {
+          id: 'demo_2',
+          platform: 'instagram',
+          contentType: 'image',
+          creator: 'beautifulkoas',
+          caption: 'Authentic Coach 1941 bag for sale! #coach #luxury #forsale',
+          hashtags: ['#coach', '#luxury', '#forsale'],
+          timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+          likes: 1850,
+          dwellTimeMs: 8500,
+          watchCompletionPercent: null,
+          interactions: ['liked'],
+          isTrending: false,
+          isBranded: true,
+          isSponsored: false,
+          engagementScore: 62,
+          viralityScore: 34,
+          mediaUrl: 'https://via.placeholder.com/400x300/8B4513/FFFFFF?text=Coach+Bag',
+          thumbnailUrl: 'https://via.placeholder.com/80x80/1a1e2e/00d4ff?text=I',
+          scrollDepth: 60,
+          detectedBrands: ['coach']
+        },
+        {
+          id: 'demo_3',
+          platform: 'tiktok',
+          contentType: 'video',
+          creator: 'google',
+          caption: 'Discover Google Cloud AI for your business 🚀',
+          hashtags: ['#GoogleCloud', '#AI', '#sponsored'],
+          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          likes: 127000,
+          dwellTimeMs: 15000,
+          watchCompletionPercent: 92,
+          interactions: ['liked', 'shared'],
+          isTrending: true,
+          isBranded: true,
+          isSponsored: true,
+          engagementScore: 95,
+          viralityScore: 88,
+          mediaUrl: 'https://via.placeholder.com/400x300/4285F4/FFFFFF?text=Google+AI',
+          thumbnailUrl: 'https://via.placeholder.com/80x80/1a1e2e/00d4ff?text=T',
+          scrollDepth: 90,
+          detectedBrands: ['google']
+        }
+      ];
+
+      res.json({
+        success: true,
+        data: mockData,
+        stats: {
+          totalItems: mockData.length,
+          avgDwellTime: 11833,
+          engagementRate: 100,
+          trendingCount: 2,
+          brandedCount: 2,
+          avgEngagementScore: 81
+        },
+        count: mockData.length,
+        timestamp: new Date().toISOString()
+      });
+    });
+
     // Export endpoint (demo)
     this.app.get('/api/export', (req, res) => {
       const { format = 'json', dataType = 'trends' } = req.query;
