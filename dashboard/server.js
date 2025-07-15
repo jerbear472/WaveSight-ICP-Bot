@@ -105,6 +105,15 @@ class DashboardServer {
       });
     });
 
+    // Engagement Feed API
+    try {
+      const engagementFeedRouter = require('./api/engagement-feed');
+      this.app.use('/api/engagement-feed', engagementFeedRouter);
+      this.logger.info('Engagement Feed API routes loaded');
+    } catch (error) {
+      this.logger.warn('Engagement Feed API not available', { error: error.message });
+    }
+
     // System status
     this.app.get('/api/status', async (req, res) => {
       try {

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engagement Feed Viewer - ICPScope</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="engagement-feed.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>ICPScope</h1>
+                    <span class="tagline">Live Engagement Feed</span>
+                </div>
+                <div class="header-controls">
+                    <div class="feed-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Live Views</span>
+                            <span class="stat-value" id="liveViews">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg Dwell</span>
+                            <span class="stat-value" id="avgDwell">0ms</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Engagement Rate</span>
+                            <span class="stat-value" id="engagementRate">0%</span>
+                        </div>
+                    </div>
+                    <div class="view-controls">
+                        <button class="control-btn active" data-view="grid" onclick="switchView('grid')">
+                            📊 Grid View
+                        </button>
+                        <button class="control-btn" data-view="stream" onclick="switchView('stream')">
+                            📱 Stream View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filter Controls -->
+        <section class="filter-section">
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Platform:</label>
+                    <select id="platformFilter" onchange="applyFilters()">
+                        <option value="all">All Platforms</option>
+                        <option value="instagram">📱 Instagram</option>
+                        <option value="tiktok">🎵 TikTok</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Content Type:</label>
+                    <select id="contentTypeFilter" onchange="applyFilters()">
+                        <option value="all">All Types</option>
+                        <option value="image">🖼️ Images</option>
+                        <option value="video">🎥 Videos</option>
+                        <option value="carousel">🎠 Carousels</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Engagement:</label>
+                    <select id="engagementFilter" onchange="applyFilters()">
+                        <option value="all">All Content</option>
+                        <option value="high">🔥 High Engagement</option>
+                        <option value="branded">🏷️ Brand Content</option>
+                        <option value="sponsored">💰 Sponsored</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Time Range:</label>
+                    <select id="timeFilter" onchange="applyFilters()">
+                        <option value="live">🔴 Live (Last 5 min)</option>
+                        <option value="hour">⏰ Last Hour</option>
+                        <option value="day">📅 Last 24 Hours</option>
+                    </select>
+                </div>
+                
+                <button class="clear-filters-btn" onclick="clearFilters()">
+                    🗑️ Clear Filters
+                </button>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Grid View -->
+            <section id="gridView" class="engagement-grid">
+                <div class="grid-header">
+                    <h2>📊 Live Content Discovery Grid</h2>
+                    <div class="grid-controls">
+                        <span class="item-count">Showing <span id="itemCount">0</span> items</span>
+                        <button class="refresh-btn" onclick="refreshFeed()">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <div class="content-grid" id="contentGrid">
+                    <!-- Dynamic content items will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Stream View -->
+            <section id="streamView" class="engagement-stream" style="display: none;">
+                <div class="stream-header">
+                    <h2>📱 Live Engagement Stream</h2>
+                    <div class="stream-controls">
+                        <button class="pause-btn" onclick="toggleStream()" id="streamToggle">
+                            ⏸️ Pause Stream
+                        </button>
+                        <span class="stream-status" id="streamStatus">🔴 Live</span>
+                    </div>
+                </div>
+                
+                <div class="stream-container" id="streamContainer">
+                    <!-- Dynamic stream items will be inserted here -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Content Detail Modal -->
+    <div class="modal-overlay" id="contentModal">
+        <div class="content-modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Content Details</h3>
+                <button class="modal-close" onclick="closeContentModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content details -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Brand Recognition Overlay -->
+    <div class="brand-overlay" id="brandOverlay">
+        <div class="brand-detection">
+            <h4>🏷️ Brand Detection Active</h4>
+            <div class="detected-brands" id="detectedBrands">
+                <!-- Dynamic brand tags -->
+            </div>
+        </div>
+    </div>
+
+    <script src="engagement-feed.js"></script>
+</body>
+</html>
