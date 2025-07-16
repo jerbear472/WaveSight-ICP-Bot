@@ -27,12 +27,6 @@
                     </div>
                 </div>
                 <div class="header-controls">
-                    <div class="time-range-selector">
-                        <button class="time-btn active" data-range="1h">1H</button>
-                        <button class="time-btn" data-range="6h">6H</button>
-                        <button class="time-btn" data-range="24h">24H</button>
-                        <button class="time-btn" data-range="7d">7D</button>
-                    </div>
                     <button class="refresh-btn" onclick="refreshData()">
                         <span class="icon">⟳</span>
                         Refresh
@@ -65,34 +59,6 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Quick Access Section -->
-            <section class="quick-access-section">
-                <h2>🚀 Quick Access</h2>
-                <div class="quick-access-grid">
-                    <a href="/bot-live-view.html" class="quick-access-card">
-                        <div class="card-icon">🏄‍♀️</div>
-                        <div class="card-content">
-                            <h3>Watch Surfer Bot Live</h3>
-                            <p>See your Surfer Bot in action - real-time content surfing and interactions</p>
-                        </div>
-                    </a>
-                    <a href="/engagement-feed.html" class="quick-access-card">
-                        <div class="card-icon">🌊</div>
-                        <div class="card-content">
-                            <h3>Content Wave Feed</h3>
-                            <p>Timeline of all content your Surfer Bots have discovered with engagement metrics</p>
-                        </div>
-                    </a>
-                    <a href="/bot-dashboard.html" class="quick-access-card">
-                        <div class="card-icon">📊</div>
-                        <div class="card-content">
-                            <h3>Surfer Bot Dashboard</h3>
-                            <p>Monitor and control your Surfer Bot sessions with analytics</p>
-                        </div>
-                    </a>
-                </div>
-            </section>
-
             <!-- Analytics Dashboard -->
             <section class="analytics-section">
                 <h2>📊 Real-Time Analytics</h2>
@@ -170,8 +136,16 @@
                                 <p class="chart-description">Real-time visualization of content discovery and engagement patterns over time. Shows when your Surfer Bots found trending content and how engagement levels fluctuate during surfing sessions.</p>
                             </div>
                             <div class="chart-controls">
-                                <button class="chart-btn active" data-chart="impressions">Impressions</button>
-                                <button class="chart-btn" data-chart="engagements">Engagements</button>
+                                <div class="time-range-selector">
+                                    <button class="time-btn active" data-range="1h">1H</button>
+                                    <button class="time-btn" data-range="6h">6H</button>
+                                    <button class="time-btn" data-range="24h">24H</button>
+                                    <button class="time-btn" data-range="7d">7D</button>
+                                </div>
+                                <div class="chart-type-controls">
+                                    <button class="chart-btn active" data-chart="impressions">Impressions</button>
+                                    <button class="chart-btn" data-chart="engagements">Engagements</button>
+                                </div>
                             </div>
                         </div>
                         <div class="chart-content">
@@ -182,10 +156,31 @@
                     <!-- Platform Distribution -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>Platform Distribution</h3>
+                            <div class="chart-title-section">
+                                <h3>Platform Distribution</h3>
+                                <p class="chart-description">Content discovery breakdown across TikTok and Instagram platforms showing where your Surfer Bots are finding the most engaging content.</p>
+                            </div>
                         </div>
                         <div class="chart-content">
                             <canvas id="platformChart"></canvas>
+                        </div>
+                        <div class="platform-stats">
+                            <div class="platform-stat">
+                                <div class="platform-icon">🎵</div>
+                                <div class="platform-info">
+                                    <span class="platform-name">TikTok</span>
+                                    <span class="platform-percentage" id="tiktokPercentage">68%</span>
+                                    <span class="platform-count" id="tiktokCount">8,547 posts</span>
+                                </div>
+                            </div>
+                            <div class="platform-stat">
+                                <div class="platform-icon">📱</div>
+                                <div class="platform-info">
+                                    <span class="platform-name">Instagram</span>
+                                    <span class="platform-percentage" id="instagramPercentage">32%</span>
+                                    <span class="platform-count" id="instagramCount">4,000 posts</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
