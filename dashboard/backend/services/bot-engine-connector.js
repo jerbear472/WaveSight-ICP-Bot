@@ -82,8 +82,11 @@ class BotEngineConnector {
         engagements: 0
       });
 
-      // Set up event forwarding
-      this.setupEventForwarding(sessionId, socket);
+      // Set up event forwarding from orchestrator
+      this.setupOrchestratorEventHandlers(sessionId, socket);
+      
+      // Set up status monitoring
+      this.setupStatusMonitoring(sessionId, socket);
 
       // Emit session started event
       socket.emit('bot-started', { sessionId });
@@ -97,7 +100,88 @@ class BotEngineConnector {
     }
   }
 
-  setupEventForwarding(sessionId, socket) {
+  setupOrchestratorEventHandlers(sessionId, socket) {
+    const session = this.activeSessions.get(sessionId);
+    if (!session) return;
+
+    // Handle real content discovery from bots
+    const contentHandler = async (data) => {
+      if (data.sessionId !== session.orchestratorSessionId) return;
+      
+      session.contentViewed++;
+      
+      // Record in database
+      await this.dataRecorder.recordContentImpression(sessionId, data.content);
+      
+      // Emit to frontend
+      socket.emit('content-discovered', {
+        sessionId,
+        content: data.content,
+        stats: {
+          contentViewed: session.contentViewed,
+          engagements: session.engagements,
+          trendsFound: this.getTrendCount(session)
+        }
+      });
+    };
+
+    // Handle engagement events
+    const engagementHandler = async (data) => {
+      if (data.sessionId !== session.orchestratorSessionId) return;
+      
+      session.engagements++;
+      
+      socket.emit('bot-engagement', {
+        sessionId,
+        engagement: data.engagement
+      });
+    };
+
+    // Handle status updates
+    const statusHandler = (data) => {
+      if (data.sessionId !== session.orchestratorSessionId) return;
+      
+      socket.emit('bot-status-update', {
+        sessionId,
+        ...data
+      });
+    };
+
+    // Handle errors
+    const errorHandler = (data) => {
+      if (data.sessionId !== session.orchestratorSessionId) return;
+      
+      socket.emit('bot-error', {
+        sessionId,
+        ...data
+      });
+    };
+
+    // Handle session completion
+    const completeHandler = async (data) => {
+      if (data.sessionId !== session.orchestratorSessionId) return;
+      
+      await this.stopSession(sessionId);
+    };
+
+    // Register handlers
+    this.orchestrator.on('bot-content-discovered', contentHandler);
+    this.orchestrator.on('bot-engagement', engagementHandler);
+    this.orchestrator.on('bot-status', statusHandler);
+    this.orchestrator.on('bot-error', errorHandler);
+    this.orchestrator.on('bot-session-complete', completeHandler);
+
+    // Store handlers for cleanup
+    session.eventHandlers = {
+      contentHandler,
+      engagementHandler,
+      statusHandler,
+      errorHandler,
+      completeHandler
+    };
+  }
+
+  setupStatusMonitoring(sessionId, socket) {
     // Monitor session status
     const sessionCheck = setInterval(async () => {
       const session = this.activeSessions.get(sessionId);
@@ -116,47 +200,24 @@ class BotEngineConnector {
         metrics: orchestratorStatus.metrics
       });
 
-      // Simulate content discovery events for now
-      // In a full implementation, we'd need to modify the bot-engine to emit these events
-      if (orchestratorStatus.isRunning && Math.random() < 0.3) {
-        session.contentViewed++;
-        
-        // Simulate discovered content
-        const simulatedContent = {
-          platform: session.platform,
-          contentType: 'reel',
-          contentId: `${session.platform}_${Date.now()}`,
-          creator: `creator_${Math.floor(Math.random() * 1000)}`,
-          music: 'Original audio',
-          url: `https://www.${session.platform}.com/content/${Date.now()}`,
-          likes: Math.floor(Math.random() * 10000),
-          comments: Math.floor(Math.random() * 500),
-          timestamp: new Date().toISOString(),
-          dwellTime: Math.floor(Math.random() * 10) + 3
-        };
-
-        // Record in database
-        await this.dataRecorder.recordContentImpression(sessionId, simulatedContent);
-
-        // Emit to frontend
-        socket.emit('content-discovered', {
-          sessionId,
-          content: simulatedContent,
-          stats: {
-            contentViewed: session.contentViewed,
-            engagements: session.engagements,
-            trendsFound: 0
-          }
-        });
-      }
-
-      // Check if session should end
+      // Check if session should end based on duration
       const elapsed = Date.now() - session.startTime;
       if (elapsed > (session.duration || 300000)) {
         await this.stopSession(sessionId);
         clearInterval(sessionCheck);
       }
     }, 3000);
+
+    // Store interval for cleanup
+    const session = this.activeSessions.get(sessionId);
+    if (session) {
+      session.statusInterval = sessionCheck;
+    }
+  }
+
+  getTrendCount(session) {
+    // TODO: Implement trend detection logic
+    return 0;
   }
 
   async stopSession(sessionId) {
@@ -192,6 +253,20 @@ class BotEngineConnector {
             trendsFound: 0
           }
         });
+      }
+
+      // Clean up event handlers
+      if (session.eventHandlers) {
+        this.orchestrator.off('bot-content-discovered', session.eventHandlers.contentHandler);
+        this.orchestrator.off('bot-engagement', session.eventHandlers.engagementHandler);
+        this.orchestrator.off('bot-status', session.eventHandlers.statusHandler);
+        this.orchestrator.off('bot-error', session.eventHandlers.errorHandler);
+        this.orchestrator.off('bot-session-complete', session.eventHandlers.completeHandler);
+      }
+
+      // Clear status interval
+      if (session.statusInterval) {
+        clearInterval(session.statusInterval);
       }
 
       // Remove from active sessions

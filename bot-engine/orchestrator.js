@@ -10,9 +10,11 @@ const ICPProfileGenerator = require('./icp-profile-generator');
 const InstagramBot = require('./instagram-bot');
 const TikTokBot = require('./tiktok-bot');
 const DataLogger = require('../data-logger/supabase-logger');
+const EventEmitter = require('events');
 
-class BotOrchestrator {
+class BotOrchestrator extends EventEmitter {
   constructor(config = {}) {
+    super();
     this.config = {
       maxConcurrentBots: parseInt(process.env.MAX_CONCURRENT_BOTS) || 5,
       sessionDuration: 300000, // 5 minutes per session
@@ -229,6 +231,43 @@ class BotOrchestrator {
         default:
           throw new Error(`Unsupported platform: ${platform}`);
       }
+
+      // Set up event forwarding from bot to orchestrator
+      bot.on('content-discovered', (data) => {
+        // Forward to orchestrator listeners with session info
+        this.emit('bot-content-discovered', {
+          sessionId: id,
+          ...data
+        });
+      });
+
+      bot.on('engagement', (data) => {
+        this.emit('bot-engagement', {
+          sessionId: id,
+          ...data
+        });
+      });
+
+      bot.on('status', (data) => {
+        this.emit('bot-status', {
+          sessionId: id,
+          ...data
+        });
+      });
+
+      bot.on('error', (data) => {
+        this.emit('bot-error', {
+          sessionId: id,
+          ...data
+        });
+      });
+
+      bot.on('session-complete', (data) => {
+        this.emit('bot-session-complete', {
+          sessionId: id,
+          ...data
+        });
+      });
 
       // Track active bot
       this.activeBots.set(id, {

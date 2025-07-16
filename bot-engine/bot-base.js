@@ -7,9 +7,11 @@ const { chromium } = require('playwright');
 const winston = require('winston');
 const { v4: uuidv4 } = require('uuid');
 const UserAgent = require('user-agents');
+const EventEmitter = require('events');
 
-class BotBase {
+class BotBase extends EventEmitter {
   constructor(icpProfile, config = {}) {
+    super();
     this.icpProfile = icpProfile;
     this.sessionId = uuidv4();
     this.config = {
@@ -287,6 +289,28 @@ class BotBase {
     this.impressions.push(impression);
     this.logger.info('Impression logged', impression);
     
+    // Emit real-time event
+    this.emit('content-discovered', {
+      sessionId: this.sessionId,
+      content: {
+        platform: contentData.platform,
+        contentType: contentData.contentType,
+        contentId: contentData.contentId,
+        creator: contentData.creatorUsername,
+        caption: contentData.caption,
+        hashtags: contentData.hashtags,
+        music: contentData.music || 'Original audio',
+        url: `https://www.${contentData.platform}.com/${contentData.contentId}`,
+        likes: contentData.metrics?.likes || 0,
+        comments: contentData.metrics?.comments || 0,
+        shares: contentData.metrics?.shares || 0,
+        isSponsored: contentData.isSponsored,
+        timestamp: impression.impressionTimestamp,
+        dwellTime: Math.round(contentData.viewDuration / 1000) || 3
+      },
+      impression
+    });
+    
     return impression;
   }
 
@@ -306,6 +330,12 @@ class BotBase {
 
     this.engagements.push(engagement);
     this.logger.info('Engagement logged', engagement);
+    
+    // Emit real-time event
+    this.emit('engagement', {
+      sessionId: this.sessionId,
+      engagement
+    });
     
     return engagement;
   }

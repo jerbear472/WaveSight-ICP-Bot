@@ -97,9 +97,17 @@ class InstagramBot extends BotBase {
       }
       
       this.logger.info('Successfully navigated to Instagram feed');
+      this.emit('status', {
+        status: 'feed_loaded',
+        message: 'Instagram feed loaded, starting to scroll'
+      });
       return true;
     } catch (error) {
       this.logger.error('Failed to navigate to Instagram', { error: error.message });
+      this.emit('error', {
+        error: 'navigation_failed',
+        message: error.message
+      });
       throw error;
     }
   }
@@ -112,6 +120,10 @@ class InstagramBot extends BotBase {
     const { behaviorPatterns, personalityTraits } = this.icpProfile;
 
     this.logger.info('Starting feed scroll', { duration, profile: this.icpProfile.profileName });
+    this.emit('status', {
+      status: 'scrolling',
+      message: `Scrolling Instagram feed as ${this.icpProfile.profileName}`
+    });
 
     while (Date.now() - startTime < duration && this.isActive) {
       try {
@@ -167,10 +179,17 @@ class InstagramBot extends BotBase {
       }
     }
 
+    const totalDuration = Date.now() - startTime;
     this.logger.info('Feed scroll completed', { 
-      duration: Date.now() - startTime,
+      duration: totalDuration,
       impressions: this.impressions.length,
       engagements: this.engagements.length
+    });
+    this.emit('session-complete', {
+      duration: totalDuration,
+      impressions: this.impressions.length,
+      engagements: this.engagements.length,
+      viewedPosts: this.viewedPosts.size
     });
   }
 
@@ -483,8 +502,16 @@ class InstagramBot extends BotBase {
       }
 
       this.logger.info('Instagram login successful');
+      this.emit('status', { 
+        status: 'logged_in',
+        message: 'Successfully logged into Instagram'
+      });
     } catch (error) {
       this.logger.error('Instagram login failed', { error: error.message });
+      this.emit('error', {
+        error: 'login_failed',
+        message: error.message
+      });
       throw error;
     }
   }

@@ -103,9 +103,17 @@ class TikTokBot extends BotBase {
       }
       
       this.logger.info('Successfully navigated to TikTok feed');
+      this.emit('status', {
+        status: 'feed_loaded',
+        message: 'TikTok feed loaded, starting to scroll'
+      });
       return true;
     } catch (error) {
       this.logger.error('Failed to navigate to TikTok', { error: error.message });
+      this.emit('error', {
+        error: 'navigation_failed',
+        message: error.message
+      });
       throw error;
     }
   }
@@ -143,6 +151,10 @@ class TikTokBot extends BotBase {
     this.logger.info('Starting TikTok feed scroll', { 
       duration, 
       profile: this.icpProfile.profileName 
+    });
+    this.emit('status', {
+      status: 'scrolling',
+      message: `Scrolling TikTok feed as ${this.icpProfile.profileName}`
     });
 
     while (Date.now() - startTime < duration && this.isActive) {
@@ -200,10 +212,17 @@ class TikTokBot extends BotBase {
       }
     }
 
+    const totalDuration = Date.now() - startTime;
     this.logger.info('TikTok scroll completed', { 
-      duration: Date.now() - startTime,
+      duration: totalDuration,
       videosWatched: this.viewedVideos.size,
       engagements: this.engagements.length
+    });
+    this.emit('session-complete', {
+      duration: totalDuration,
+      impressions: this.impressions.length,
+      engagements: this.engagements.length,
+      videosWatched: this.viewedVideos.size
     });
   }
 
@@ -597,8 +616,16 @@ class TikTokBot extends BotBase {
       await this.handleInitialPopups();
 
       this.logger.info('TikTok login successful');
+      this.emit('status', { 
+        status: 'logged_in',
+        message: 'Successfully logged into TikTok'
+      });
     } catch (error) {
       this.logger.error('TikTok login failed', { error: error.message });
+      this.emit('error', {
+        error: 'login_failed',
+        message: error.message
+      });
       throw error;
     }
   }
