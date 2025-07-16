@@ -119,12 +119,12 @@ class BotOrchestrator extends EventEmitter {
    * Set up scheduled tasks
    */
   setupScheduledTasks() {
-    // Run bot sessions every 15 minutes
-    cron.schedule('*/15 * * * *', () => {
-      if (!this.isRunning) {
-        this.runScheduledSessions();
-      }
-    });
+    // DISABLED: Automatic bot sessions - only run when user presses Start Bot Session
+    // cron.schedule('*/15 * * * *', () => {
+    //   if (!this.isRunning) {
+    //     this.runScheduledSessions();
+    //   }
+    // });
 
     // Generate trend reports every hour
     cron.schedule('0 * * * *', () => {
@@ -136,7 +136,7 @@ class BotOrchestrator extends EventEmitter {
       this.performDailyMaintenance();
     });
 
-    this.logger.info('Scheduled tasks configured');
+    this.logger.info('Scheduled tasks configured (auto-start disabled)');
   }
 
   /**
