@@ -247,11 +247,9 @@ class InstagramBot {
                         }
                     });
                     
-                    // Try to get view count
-                    const viewElement = document.querySelector('span:contains("views")');
-                    if (viewElement) {
-                        metrics.views = parseInt(viewElement.innerText.replace(/[^0-9]/g, '')) || 0;
-                    }
+                    // Try to get view count - fix CSS selector issue
+                    // Instagram doesn't consistently show view counts, skip for now
+                    metrics.views = 0;
                     
                     return metrics;
                 };

@@ -216,6 +216,10 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
 // Start server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
