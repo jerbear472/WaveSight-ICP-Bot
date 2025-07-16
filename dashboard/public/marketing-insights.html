@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Insights - WAVESITE</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="marketing-insights.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <div class="brand-wrapper">
+                    <div class="logo-container">
+                        <img src="logo2.png" alt="WAVESITE" class="main-logo">
+                        <h1 class="brand-name">WAVESITE</h1>
+                    </div>
+                    <p class="main-tagline">Marketing Intelligence Dashboard</p>
+                </div>
+                <div class="header-info">
+                    <p class="sub-tagline">AI-Powered Trend Analysis for Marketing Teams</p>
+                    <p class="description">Real-time viral trend detection, audience insights, and actionable marketing opportunities</p>
+                </div>
+                <div class="header-controls">
+                    <button class="export-btn" onclick="exportReport()">
+                        <span class="icon">📊</span>
+                        Export Report
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="main-navigation">
+                <div class="nav-container">
+                    <a href="/" class="nav-item">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                        <span class="nav-description">Overview & Analytics</span>
+                    </a>
+                    <a href="/marketing-insights.html" class="nav-item active">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Marketing Insights</span>
+                        <span class="nav-description">Trend Analysis</span>
+                    </a>
+                    <a href="/engagement-feed.html" class="nav-item">
+                        <span class="nav-icon">🌊</span>
+                        <span class="nav-label">Content Wave Feed</span>
+                        <span class="nav-description">Discovered Content</span>
+                    </a>
+                    <a href="/bot-dashboard.html" class="nav-item">
+                        <span class="nav-icon">🤖</span>
+                        <span class="nav-label">Bot Control</span>
+                        <span class="nav-description">Manage Sessions</span>
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Current Viral Trends Section -->
+            <section class="viral-trends-section">
+                <div class="section-header">
+                    <h2>🔥 Current Viral Trends</h2>
+                    <div class="trend-filters">
+                        <select id="trendTimeframe">
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d" selected>Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                        <select id="platformFilter">
+                            <option value="all">All Platforms</option>
+                            <option value="tiktok">TikTok Only</option>
+                            <option value="instagram">Instagram Only</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="trend-cards-grid">
+                    <!-- Normcore Trend -->
+                    <div class="trend-card rising">
+                        <div class="trend-header">
+                            <div class="trend-title">
+                                <h3>Normcore Aesthetic</h3>
+                                <span class="trend-badge rising">Rising</span>
+                            </div>
+                            <div class="trend-score">
+                                <span class="score-label">Viral Score</span>
+                                <span class="score-value">87</span>
+                            </div>
+                        </div>
+                        <div class="trend-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Total Reach</span>
+                                <span class="metric-value">12.4M</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Engagement Rate</span>
+                                <span class="metric-value">8.7%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Growth</span>
+                                <span class="metric-value positive">+234%</span>
+                            </div>
+                        </div>
+                        <div class="trend-insights">
+                            <h4>Marketing Opportunities:</h4>
+                            <ul>
+                                <li>Target Gen Z and younger millennials seeking authenticity</li>
+                                <li>Partner with micro-influencers in fashion/lifestyle</li>
+                                <li>Focus on "anti-trend" messaging and simplicity</li>
+                            </ul>
+                        </div>
+                        <div class="trend-chart">
+                            <canvas id="normcoreChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Homesteading Trend -->
+                    <div class="trend-card peak">
+                        <div class="trend-header">
+                            <div class="trend-title">
+                                <h3>Homesteading Content</h3>
+                                <span class="trend-badge peak">At Peak</span>
+                            </div>
+                            <div class="trend-score">
+                                <span class="score-label">Viral Score</span>
+                                <span class="score-value">92</span>
+                            </div>
+                        </div>
+                        <div class="trend-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Total Reach</span>
+                                <span class="metric-value">28.7M</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Engagement Rate</span>
+                                <span class="metric-value">11.2%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Growth</span>
+                                <span class="metric-value positive">+567%</span>
+                            </div>
+                        </div>
+                        <div class="trend-insights">
+                            <h4>Marketing Opportunities:</h4>
+                            <ul>
+                                <li>Sustainable living and eco-friendly product placement</li>
+                                <li>DIY tools and supplies partnerships</li>
+                                <li>Educational content series potential</li>
+                            </ul>
+                        </div>
+                        <div class="trend-chart">
+                            <canvas id="homesteadingChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Anti-Pasta Salad Trend -->
+                    <div class="trend-card emerging">
+                        <div class="trend-header">
+                            <div class="trend-title">
+                                <h3>Anti-Pasta Salad</h3>
+                                <span class="trend-badge emerging">Emerging</span>
+                            </div>
+                            <div class="trend-score">
+                                <span class="score-label">Viral Score</span>
+                                <span class="score-value">76</span>
+                            </div>
+                        </div>
+                        <div class="trend-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Total Reach</span>
+                                <span class="metric-value">4.2M</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Engagement Rate</span>
+                                <span class="metric-value">9.8%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Growth</span>
+                                <span class="metric-value positive">+892%</span>
+                            </div>
+                        </div>
+                        <div class="trend-insights">
+                            <h4>Marketing Opportunities:</h4>
+                            <ul>
+                                <li>Food brands can create recipe variations</li>
+                                <li>Grocery delivery services partnership potential</li>
+                                <li>Quick recipe content series opportunity</li>
+                            </ul>
+                        </div>
+                        <div class="trend-chart">
+                            <canvas id="antiPastaChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bugatti Trend -->
+                    <div class="trend-card viral">
+                        <div class="trend-header">
+                            <div class="trend-title">
+                                <h3>Bugatti Lifestyle</h3>
+                                <span class="trend-badge viral">Viral</span>
+                            </div>
+                            <div class="trend-score">
+                                <span class="score-label">Viral Score</span>
+                                <span class="score-value">95</span>
+                            </div>
+                        </div>
+                        <div class="trend-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Total Reach</span>
+                                <span class="metric-value">45.3M</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Engagement Rate</span>
+                                <span class="metric-value">13.5%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Growth</span>
+                                <span class="metric-value positive">+1,240%</span>
+                            </div>
+                        </div>
+                        <div class="trend-insights">
+                            <h4>Marketing Opportunities:</h4>
+                            <ul>
+                                <li>Luxury brand aspirational campaigns</li>
+                                <li>Success mindset content partnerships</li>
+                                <li>High-end lifestyle product placement</li>
+                            </ul>
+                        </div>
+                        <div class="trend-chart">
+                            <canvas id="bugattiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Audience Demographics Section -->
+            <section class="demographics-section">
+                <h2>👥 Audience Demographics & Insights</h2>
+                <div class="demographics-grid">
+                    <div class="demo-card">
+                        <h3>Age Distribution</h3>
+                        <canvas id="ageChart"></canvas>
+                    </div>
+                    <div class="demo-card">
+                        <h3>Platform Preference by Age</h3>
+                        <canvas id="platformAgeChart"></canvas>
+                    </div>
+                    <div class="demo-card">
+                        <h3>Geographic Reach</h3>
+                        <div class="geo-stats">
+                            <div class="geo-item">
+                                <span class="country">🇺🇸 United States</span>
+                                <span class="percentage">42%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🇬🇧 United Kingdom</span>
+                                <span class="percentage">18%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🇨🇦 Canada</span>
+                                <span class="percentage">12%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🇦🇺 Australia</span>
+                                <span class="percentage">8%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="country">🌍 Others</span>
+                                <span class="percentage">20%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actionable Insights Section -->
+            <section class="insights-section">
+                <h2>💡 Actionable Marketing Insights</h2>
+                <div class="insights-grid">
+                    <div class="insight-card priority-high">
+                        <div class="insight-header">
+                            <span class="priority-badge">High Priority</span>
+                            <span class="insight-date">Updated 2 hours ago</span>
+                        </div>
+                        <h3>Leverage Homesteading Trend Peak</h3>
+                        <p>The homesteading trend is at its peak with 11.2% engagement rate. Brands in sustainable living, DIY, and eco-friendly products should activate campaigns immediately.</p>
+                        <div class="action-items">
+                            <h4>Recommended Actions:</h4>
+                            <ul>
+                                <li>Launch user-generated content campaign with #MyHomestead</li>
+                                <li>Partner with top 10 homesteading creators (list available)</li>
+                                <li>Create educational content series on sustainable living</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="insight-card priority-medium">
+                        <div class="insight-header">
+                            <span class="priority-badge">Medium Priority</span>
+                            <span class="insight-date">Updated 5 hours ago</span>
+                        </div>
+                        <h3>Normcore Fashion Opportunity</h3>
+                        <p>Normcore aesthetic is rapidly rising among Gen Z. Fashion brands should pivot to minimalist messaging and "anti-trend" positioning.</p>
+                        <div class="action-items">
+                            <h4>Recommended Actions:</h4>
+                            <ul>
+                                <li>Develop "basics" collection with normcore influencers</li>
+                                <li>Create content around "everyday style" theme</li>
+                                <li>Target 18-24 demographic with simplified messaging</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="insight-card priority-low">
+                        <div class="insight-header">
+                            <span class="priority-badge">Emerging Opportunity</span>
+                            <span class="insight-date">Updated 1 day ago</span>
+                        </div>
+                        <h3>Anti-Pasta Salad Recipe Trend</h3>
+                        <p>Food trend showing 892% growth in last week. Food brands and grocery services have opportunity to capitalize on viral recipe format.</p>
+                        <div class="action-items">
+                            <h4>Recommended Actions:</h4>
+                            <ul>
+                                <li>Create branded recipe variations</li>
+                                <li>Partner with food content creators</li>
+                                <li>Launch ingredient bundle promotions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Success Metrics Section -->
+            <section class="metrics-section">
+                <h2>📊 Campaign Success Predictors</h2>
+                <div class="predictor-grid">
+                    <div class="predictor-card">
+                        <h3>Optimal Posting Times</h3>
+                        <div class="time-grid">
+                            <div class="time-slot peak">
+                                <span class="time">6-9 AM EST</span>
+                                <span class="performance">Peak</span>
+                            </div>
+                            <div class="time-slot high">
+                                <span class="time">12-2 PM EST</span>
+                                <span class="performance">High</span>
+                            </div>
+                            <div class="time-slot peak">
+                                <span class="time">7-10 PM EST</span>
+                                <span class="performance">Peak</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="predictor-card">
+                        <h3>Content Format Performance</h3>
+                        <div class="format-stats">
+                            <div class="format-item">
+                                <span class="format">Short Video (15-30s)</span>
+                                <div class="performance-bar">
+                                    <div class="bar-fill" style="width: 95%"></div>
+                                </div>
+                                <span class="percentage">95%</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format">Carousel Posts</span>
+                                <div class="performance-bar">
+                                    <div class="bar-fill" style="width: 78%"></div>
+                                </div>
+                                <span class="percentage">78%</span>
+                            </div>
+                            <div class="format-item">
+                                <span class="format">Static Images</span>
+                                <div class="performance-bar">
+                                    <div class="bar-fill" style="width: 45%"></div>
+                                </div>
+                                <span class="percentage">45%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="predictor-card">
+                        <h3>Hashtag Effectiveness</h3>
+                        <div class="hashtag-cloud">
+                            <span class="hashtag trending">#homesteading</span>
+                            <span class="hashtag viral">#normcore</span>
+                            <span class="hashtag rising">#antipastaslad</span>
+                            <span class="hashtag peak">#bugatti</span>
+                            <span class="hashtag high">#sustainable</span>
+                            <span class="hashtag medium">#minimalist</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="marketing-insights.js"></script>
+</body>
+</html>

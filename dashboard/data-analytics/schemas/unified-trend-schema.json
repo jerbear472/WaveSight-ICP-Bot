@@ -1,0 +1,181 @@
+{
+  "trendDataSchema": {
+    "version": "1.0",
+    "description": "Unified schema for normalizing trend data across TikTok and Instagram",
+    "fields": {
+      "contentId": {
+        "type": "string",
+        "description": "Unique identifier for content piece",
+        "format": "{platform}_{originalId}"
+      },
+      "platform": {
+        "type": "string",
+        "enum": ["tiktok", "instagram"],
+        "description": "Source platform"
+      },
+      "timestamp": {
+        "type": "datetime",
+        "format": "ISO-8601",
+        "description": "When content was discovered/posted"
+      },
+      "metrics": {
+        "impressions": {
+          "type": "integer",
+          "description": "Total views/impressions"
+        },
+        "engagementScore": {
+          "type": "float",
+          "description": "Normalized engagement score (0-1000)",
+          "calculation": "(likes × 1) + (comments × 2) + (shares × 3) + (saves × 2.5) / impressions × 1000"
+        },
+        "likes": {
+          "type": "integer",
+          "description": "Total likes/hearts"
+        },
+        "comments": {
+          "type": "integer",
+          "description": "Total comments"
+        },
+        "shares": {
+          "type": "integer",
+          "description": "Total shares/reposts"
+        },
+        "saves": {
+          "type": "integer",
+          "description": "Total saves/bookmarks"
+        },
+        "engagementVelocity": {
+          "type": "float",
+          "description": "Rate of engagement growth per hour"
+        }
+      },
+      "content": {
+        "type": {
+          "type": "string",
+          "enum": ["video", "image", "carousel", "reel", "story"],
+          "description": "Content format type"
+        },
+        "caption": {
+          "type": "string",
+          "description": "Text caption/description"
+        },
+        "hashtags": {
+          "type": "array",
+          "items": "string",
+          "description": "All hashtags used"
+        },
+        "mentions": {
+          "type": "array",
+          "items": "string",
+          "description": "Mentioned accounts"
+        },
+        "soundId": {
+          "type": "string",
+          "description": "Audio/music identifier (if applicable)"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Video duration in seconds"
+        }
+      },
+      "creator": {
+        "username": {
+          "type": "string",
+          "description": "Creator's username"
+        },
+        "followerCount": {
+          "type": "integer",
+          "description": "Creator's follower count at time of posting"
+        },
+        "verifiedStatus": {
+          "type": "boolean",
+          "description": "Whether creator is verified"
+        },
+        "creatorCategory": {
+          "type": "string",
+          "enum": ["micro", "mid-tier", "macro", "mega"],
+          "description": "Creator tier based on follower count"
+        }
+      },
+      "trendIndicators": {
+        "viralScore": {
+          "type": "float",
+          "description": "Proprietary viral potential score (0-100)",
+          "calculation": "Based on engagement velocity, creator tier, and content performance"
+        },
+        "trendCategory": {
+          "type": "array",
+          "items": "string",
+          "description": "Identified trend categories",
+          "examples": ["normcore", "homesteading", "anti-pasta-salad", "bugatti", "aesthetic", "lifestyle"]
+        },
+        "growthPhase": {
+          "type": "string",
+          "enum": ["emerging", "rising", "peak", "declining"],
+          "description": "Current phase in viral lifecycle"
+        },
+        "crossPlatformReach": {
+          "type": "boolean",
+          "description": "Whether trend appears on multiple platforms"
+        }
+      },
+      "geographic": {
+        "primaryRegion": {
+          "type": "string",
+          "description": "Primary geographic region of engagement"
+        },
+        "topCountries": {
+          "type": "array",
+          "items": "string",
+          "description": "Top 5 countries by engagement"
+        }
+      },
+      "audience": {
+        "primaryDemographic": {
+          "type": "string",
+          "enum": ["gen-z", "millennial", "gen-x", "mixed"],
+          "description": "Primary audience demographic"
+        },
+        "estimatedAge": {
+          "type": "object",
+          "properties": {
+            "13-17": "float",
+            "18-24": "float",
+            "25-34": "float",
+            "35-44": "float",
+            "45+": "float"
+          }
+        }
+      },
+      "brandOpportunities": {
+        "brandMentions": {
+          "type": "array",
+          "items": "string",
+          "description": "Brands mentioned or featured"
+        },
+        "sponsoredContent": {
+          "type": "boolean",
+          "description": "Whether content is sponsored"
+        },
+        "marketingPotential": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "viral"],
+          "description": "Potential for marketing activation"
+        }
+      }
+    }
+  },
+  "platformMappings": {
+    "tiktok": {
+      "views": "impressions",
+      "hearts": "likes",
+      "reposts": "shares"
+    },
+    "instagram": {
+      "reach": "impressions",
+      "likes": "likes",
+      "saves": "saves",
+      "shares": "shares"
+    }
+  }
+}
