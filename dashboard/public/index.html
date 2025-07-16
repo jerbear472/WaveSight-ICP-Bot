@@ -39,6 +39,28 @@
                     </button>
                 </div>
             </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="main-navigation">
+                <div class="nav-container">
+                    <a href="/" class="nav-item active">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                    <a href="/bot-live-view.html" class="nav-item">
+                        <span class="nav-icon">🏄‍♀️</span>
+                        <span class="nav-label">Live Surfer Bot</span>
+                    </a>
+                    <a href="/engagement-feed.html" class="nav-item">
+                        <span class="nav-icon">🌊</span>
+                        <span class="nav-label">Content Wave Feed</span>
+                    </a>
+                    <a href="/bot-dashboard.html" class="nav-item">
+                        <span class="nav-icon">🤖</span>
+                        <span class="nav-label">Bot Control</span>
+                    </a>
+                </div>
+            </nav>
         </header>
 
         <!-- Main Content -->
@@ -71,50 +93,67 @@
                 </div>
             </section>
 
-            <!-- Overview Cards -->
-            <section class="overview-section">
-                <div class="overview-grid">
-                    <div class="overview-card">
-                        <div class="card-header">
-                            <h3>Total Impressions</h3>
-                            <span class="icon">👁️</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="metric-value" id="totalImpressions">-</div>
-                            <div class="metric-change" id="impressionsChange">-</div>
-                        </div>
-                    </div>
-                    
-                    <div class="overview-card">
-                        <div class="card-header">
-                            <h3>Total Engagements</h3>
-                            <span class="icon">💬</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="metric-value" id="totalEngagements">-</div>
-                            <div class="metric-change" id="engagementsChange">-</div>
+            <!-- Analytics Dashboard -->
+            <section class="analytics-section">
+                <h2>📊 Real-Time Analytics</h2>
+                <div class="stats-grid">
+                    <div class="stat-tile">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Content Impressions</div>
+                            <div class="stat-value" id="totalImpressions">12,547</div>
+                            <div class="stat-description">Total content pieces viewed by Surfer Bots</div>
+                            <div class="stat-change positive" id="impressionsChange">+15.2% from yesterday</div>
                         </div>
                     </div>
                     
-                    <div class="overview-card">
-                        <div class="card-header">
-                            <h3>Viral Content</h3>
-                            <span class="icon">🔥</span>
-                        </div>
-                        <div class="card-content">
-                            <div class="metric-value" id="viralContent">-</div>
-                            <div class="metric-change" id="viralChange">-</div>
+                    <div class="stat-tile">
+                        <div class="stat-icon">💫</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Engagement Score</div>
+                            <div class="stat-value" id="avgEngagementScore">847</div>
+                            <div class="stat-description">Average interaction quality (likes, shares, comments)</div>
+                            <div class="stat-change positive" id="engagementChange">+8.4% this hour</div>
                         </div>
                     </div>
                     
-                    <div class="overview-card">
-                        <div class="card-header">
-                            <h3>Breakout Creators</h3>
-                            <span class="icon">⭐</span>
+                    <div class="stat-tile">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Viral Content</div>
+                            <div class="stat-value" id="viralContent">23</div>
+                            <div class="stat-description">Content pieces trending above 1000 engagement score</div>
+                            <div class="stat-change positive" id="viralChange">+5 new trending posts</div>
                         </div>
-                        <div class="card-content">
-                            <div class="metric-value" id="breakoutCreators">-</div>
-                            <div class="metric-change" id="creatorsChange">-</div>
+                    </div>
+                    
+                    <div class="stat-tile">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Wave Riders Active</div>
+                            <div class="stat-value" id="activeRiders">4</div>
+                            <div class="stat-description">Surfer Bots currently discovering content</div>
+                            <div class="stat-change neutral" id="ridersStatus">2 surfing, 2 on standby</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-tile">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Trend Velocity</div>
+                            <div class="stat-value" id="trendVelocity">92%</div>
+                            <div class="stat-description">Speed of emerging trend detection</div>
+                            <div class="stat-change positive" id="velocityChange">Peak performance</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-tile">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-content">
+                            <div class="stat-label">Brand Mentions</div>
+                            <div class="stat-value" id="brandMentions">156</div>
+                            <div class="stat-description">Detected brand references in discovered content</div>
+                            <div class="stat-change positive" id="brandChange">+12 new mentions</div>
                         </div>
                     </div>
                 </div>
@@ -126,7 +165,10 @@
                     <!-- Engagement Timeline -->
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>Engagement Timeline</h3>
+                            <div class="chart-title-section">
+                                <h3>Engagement Timeline</h3>
+                                <p class="chart-description">Real-time visualization of content discovery and engagement patterns over time. Shows when your Surfer Bots found trending content and how engagement levels fluctuate during surfing sessions.</p>
+                            </div>
                             <div class="chart-controls">
                                 <button class="chart-btn active" data-chart="impressions">Impressions</button>
                                 <button class="chart-btn" data-chart="engagements">Engagements</button>
