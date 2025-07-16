@@ -314,7 +314,7 @@ class TikTokBot {
                 .from('discovered_content')
                 .insert({
                     content_id: `tt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                    session_id: this.session.id,
+                    session_id: this.session.session_id || this.session.id,
                     platform: 'tiktok',
                     content_type: content.contentType,
                     creator_username: content.creator,
@@ -371,7 +371,7 @@ class TikTokBot {
             const { error } = await this.supabase
                 .from('bot_interactions')
                 .insert({
-                    session_id: this.session.id,
+                    session_id: this.session.session_id || this.session.id,
                     content_id: content.url,
                     interaction_type: type,
                     interaction_time: new Date().toISOString(),
@@ -391,7 +391,7 @@ class TikTokBot {
                 .from('detected_trends')
                 .insert({
                     trend_id: `${trend.type}_${trend.id}`,
-                    session_id: this.session.id,
+                    session_id: this.session.session_id || this.session.id,
                     trend_type: trend.type,
                     trend_name: trend.name,
                     platform: 'tiktok',

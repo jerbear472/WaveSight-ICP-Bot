@@ -18,6 +18,7 @@ class InstagramBot {
         this.contentViewed = 0;
         this.engagements = 0;
         this.trendsFound = 0;
+        this.currentContentId = null;
     }
 
     async start() {
@@ -264,6 +265,10 @@ class InstagramBot {
             if (likeButton) {
                 await likeButton.click();
                 await this.page.waitForTimeout(500 + Math.random() * 1000);
+                
+                // Save interaction
+                await this.saveInteraction('like', this.currentContentId);
+                this.engagements++;
             }
         } catch (error) {
             console.error('Error liking content:', error);
@@ -295,6 +300,10 @@ class InstagramBot {
 
     async saveContent(content) {
         try {
+            // Generate content ID
+            const contentId = `ig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            this.currentContentId = contentId;
+            
             // Calculate engagement rate
             const engagementRate = content.likes > 0 ? 
                 ((content.likes + content.comments * 2) / content.likes) * 100 : 0;
@@ -306,8 +315,8 @@ class InstagramBot {
             const { data, error } = await this.supabase
                 .from('discovered_content')
                 .insert({
-                    content_id: `ig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                    session_id: this.session.id,
+                    content_id: contentId,
+                    session_id: this.session.session_id || this.session.id,
                     platform: 'instagram',
                     content_type: content.contentType,
                     creator_username: content.creator,
@@ -331,6 +340,30 @@ class InstagramBot {
             
         } catch (error) {
             console.error('Error saving content:', error);
+        }
+    }
+
+    async saveInteraction(type, contentId) {
+        try {
+            const { error } = await this.supabase
+                .from('interactions')
+                .insert({
+                    session_id: this.session.session_id || this.session.id,
+                    content_id: contentId,
+                    interaction_type: type,
+                    performed_at: new Date().toISOString()
+                });
+                
+            if (error) throw error;
+            
+            // Update content to mark as engaged
+            await this.supabase
+                .from('discovered_content')
+                .update({ bot_engaged: true })
+                .eq('content_id', contentId);
+                
+        } catch (error) {
+            console.error('Error saving interaction:', error);
         }
     }
 
@@ -361,7 +394,7 @@ class InstagramBot {
                     trends_found: this.trendsFound,
                     status: 'completed'
                 })
-                .eq('session_id', this.session.id);
+                .eq('session_id', this.session.session_id || this.session.id);
                 
             if (error) throw error;
             
