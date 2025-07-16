@@ -5,7 +5,8 @@
 class BotClient {
     constructor() {
         this.socket = null;
-        this.backendUrl = 'http://localhost:3001'; // Update this to your backend URL
+        // Automatically detect backend URL based on environment
+        this.backendUrl = this.getBackendUrl();
         this.currentSession = null;
         this.dataService = new BotDataService();
         this.callbacks = {
@@ -15,20 +16,50 @@ class BotClient {
             onError: null
         };
     }
+    
+    getBackendUrl() {
+        // If running locally
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:3001';
+        }
+        
+        // If running on Render, use the backend service URL
+        // The backend should be deployed as a separate service on Render
+        // Update this URL with your actual Render backend URL
+        if (window.location.hostname.includes('onrender.com')) {
+            // Format: https://your-backend-service.onrender.com
+            return window.location.protocol + '//' + window.location.hostname.replace('wavesight-dashboard', 'wavesight-backend');
+        }
+        
+        // Default: assume backend is on same domain, different port
+        return window.location.protocol + '//' + window.location.hostname + ':3001';
+    }
 
     connect() {
         if (this.socket) return;
+        
+        console.log('Attempting to connect to backend at:', this.backendUrl);
 
         this.socket = io(this.backendUrl, {
-            transports: ['websocket', 'polling']
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
         });
 
         this.socket.on('connect', () => {
-            console.log('Connected to bot backend');
+            console.log('✅ Connected to bot backend at:', this.backendUrl);
+            this.updateConnectionStatus(true);
         });
 
         this.socket.on('disconnect', () => {
-            console.log('Disconnected from bot backend');
+            console.log('❌ Disconnected from bot backend');
+            this.updateConnectionStatus(false);
+        });
+        
+        this.socket.on('connect_error', (error) => {
+            console.error('Connection error:', error.message);
+            this.updateConnectionStatus(false, error.message);
         });
 
         this.socket.on('bot-started', (data) => {
@@ -178,6 +209,24 @@ class BotClient {
         } catch (error) {
             console.error('Error fetching stats:', error);
             return {};
+        }
+    }
+    
+    updateConnectionStatus(connected, errorMessage = '') {
+        // Update UI to show connection status
+        const statusElement = document.querySelector('.connection-status');
+        if (statusElement) {
+            if (connected) {
+                statusElement.innerHTML = '<span style="color: green;">✅ Connected to backend</span>';
+            } else {
+                statusElement.innerHTML = `<span style="color: red;">❌ Disconnected${errorMessage ? ': ' + errorMessage : ''}</span>`;
+            }
+        }
+        
+        // Update any status indicators
+        const indicator = document.querySelector('.status-indicator');
+        if (indicator) {
+            indicator.className = connected ? 'status-indicator connected' : 'status-indicator disconnected';
         }
     }
 }

@@ -286,6 +286,26 @@ class InstagramBot extends BotBase {
   }
 
   /**
+   * Helper to dismiss popups with various button texts
+   */
+  async dismissPopup(buttonTexts) {
+    try {
+      for (const text of buttonTexts) {
+        const button = await this.page.$(`button:has-text("${text}")`);
+        if (button && await button.isVisible()) {
+          this.logger.info(`Dismissing popup with "${text}" button`);
+          await button.click();
+          await this.sleep(1500);
+          return true;
+        }
+      }
+    } catch (e) {
+      this.logger.debug('No popup found or error dismissing');
+    }
+    return false;
+  }
+
+  /**
    * Extract unique content ID from post
    */
   async extractContentId(postElement) {
@@ -545,18 +565,26 @@ class InstagramBot extends BotBase {
       const afterLoginUrl = this.page.url();
       this.logger.info(`After login URL: ${afterLoginUrl}`);
       
-      if (afterLoginUrl.includes('onetap')) {
+      // Handle various post-login redirects and popups
+      if (afterLoginUrl.includes('onetap') || afterLoginUrl.includes('save')) {
         // Handle the "Save your login info?" page
-        this.logger.info('On onetap page, dismissing...');
-        try {
-          const notNowButton = await this.page.$('button:has-text("Not Now"), button:has-text("Not now")');
-          if (notNowButton) {
-            await notNowButton.click();
-            await this.sleep(2000);
-          }
-        } catch (e) {
-          this.logger.warn('Could not find Not Now button');
-        }
+        this.logger.info('On save login page, dismissing...');
+        await this.dismissPopup(['Not Now', 'Not now', 'Skip']);
+      }
+      
+      // Check if we're still not on the home page
+      await this.sleep(2000);
+      const currentUrl = this.page.url();
+      
+      // Handle any other popups that might appear
+      if (!currentUrl.endsWith('instagram.com/')) {
+        this.logger.info('Checking for additional popups...');
+        
+        // Turn on Notifications popup
+        await this.dismissPopup(['Not Now', 'Not now', 'Skip']);
+        
+        // Any other "Save" or "Add" popups
+        await this.dismissPopup(['Not Now', 'Not now', 'Skip', 'Cancel']);
       }
       
       this.logger.info('Instagram login successful');
