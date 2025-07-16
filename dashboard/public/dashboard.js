@@ -669,18 +669,26 @@ async function startBot() {
   try {
     // First check if backend is available
     const healthCheck = await fetch('http://localhost:3001/api/health', {
-      method: 'GET',
-      timeout: 3000
+      method: 'GET'
+    }).catch(err => {
+      console.error('Health check failed:', err);
+      throw new Error('Backend server not responding. Make sure it\'s running on port 3001');
     });
     
-    if (!healthCheck.ok) {
-      throw new Error('Backend server not running. Start with: cd backend && npm run dev');
+    if (!healthCheck || !healthCheck.ok) {
+      throw new Error('Backend server not healthy. Status: ' + (healthCheck ? healthCheck.status : 'No response'));
     }
     
     // Check if bot client is available
     if (window.botClient) {
-      // Connect to backend
-      window.botClient.connect();
+      console.log('Bot client found, connecting...');
+      
+      // Make sure we're connected
+      if (!window.botClient.socket || !window.botClient.socket.connected) {
+        window.botClient.connect();
+        // Give it a moment to connect
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       // Set up callbacks
       window.botClient.onContentDiscovered((data) => {
@@ -699,10 +707,10 @@ async function startBot() {
         startButton.disabled = false;
         startButton.textContent = 'Start Bot Session';
         
-        // Show start button, hide stop button
+        // Enable start button, disable stop button
         const stopButton = document.querySelector('.stop-bot-btn');
-        startButton.style.display = 'block';
-        stopButton.style.display = 'none';
+        startButton.disabled = false;
+        stopButton.disabled = true;
       });
       
       window.botClient.onError((error) => {
@@ -728,11 +736,10 @@ async function startBot() {
       statusText.textContent = `${platform} Bot Running`;
       statusIndicator.style.background = '#10b981';
       
-      // Show stop button, hide start button
+      // Enable stop button, disable start button
       const stopButton = document.querySelector('.stop-bot-btn');
-      startButton.style.display = 'none';
-      stopButton.style.display = 'block';
-      startButton.disabled = false; // Re-enable for next time
+      startButton.disabled = true;
+      stopButton.disabled = false;
       
     } else {
       throw new Error('Bot client not loaded. Include bot-client.js script.');
@@ -748,10 +755,10 @@ async function startBot() {
     startButton.disabled = false;
     startButton.textContent = 'Start Bot Session';
     
-    // Make sure stop button is hidden on error
+    // Make sure stop button is disabled on error
     const stopButton = document.querySelector('.stop-bot-btn');
     if (stopButton) {
-      stopButton.style.display = 'none';
+      stopButton.disabled = true;
     }
   }
 }
@@ -785,9 +792,8 @@ async function stopBot() {
     currentBotSession = null;
     statusIndicator.style.background = '#64748b';
     statusText.textContent = 'Bot Stopped';
-    startButton.style.display = 'block';
-    stopButton.style.display = 'none';
-    stopButton.disabled = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
     stopButton.textContent = 'Stop Bot Session';
     
   } catch (error) {
