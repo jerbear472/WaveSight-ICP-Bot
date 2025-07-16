@@ -66,6 +66,39 @@ class BotLiveViewer {
                 likeChance: 0.6,
                 commentChance: 0.25,
                 shareChance: 0.12
+            },
+            fashion_beauty_enthusiast: {
+                name: '💄 Fashion Wave Rider',
+                traits: ['Style-conscious', 'Trend-aware', 'Beauty-focused', 'Visual surfer'],
+                scrollSpeed: 70,
+                engagementRate: 80,
+                interestKeywords: ['fashion', 'beauty', 'style', 'makeup', 'skincare', 'outfit'],
+                avgDwellTime: 10000,
+                likeChance: 0.7,
+                commentChance: 0.3,
+                shareChance: 0.15
+            },
+            fitness_health_focused: {
+                name: '💪 Fitness Wave Rider',
+                traits: ['Health-conscious', 'Active', 'Goal-oriented', 'Motivated surfer'],
+                scrollSpeed: 65,
+                engagementRate: 75,
+                interestKeywords: ['fitness', 'workout', 'gym', 'health', 'nutrition', 'wellness'],
+                avgDwellTime: 11000,
+                likeChance: 0.5,
+                commentChance: 0.2,
+                shareChance: 0.1
+            },
+            parent_family_oriented: {
+                name: '👨‍👩‍👧 Family Wave Rider',
+                traits: ['Family-focused', 'Practical', 'Community-minded', 'Careful surfer'],
+                scrollSpeed: 40,
+                engagementRate: 65,
+                interestKeywords: ['parenting', 'family', 'kids', 'education', 'home', 'recipes'],
+                avgDwellTime: 14000,
+                likeChance: 0.4,
+                commentChance: 0.35,
+                shareChance: 0.2
             }
         };
         
@@ -100,36 +133,184 @@ class BotLiveViewer {
         const platforms = {
             instagram: {
                 icon: '📱',
-                creators: ['techguru22', 'mindmatterlife', 'startuplife', 'aiexplorer', 'cryptokid'],
-                contentTypes: ['image', 'video', 'carousel', 'story']
+                creators: [
+                    'techguru22', 'mindmatterlife', 'startuplife', 'aiexplorer', 'cryptokid',
+                    'fashionista_x', 'healthyvibes', 'travel_stories', 'foodie_adventures', 'fitness_journey',
+                    'art_collective', 'photo_daily', 'nature_lover', 'city_explorer', 'lifestyle_blog',
+                    'beauty_tips', 'home_decor', 'diy_crafts', 'pet_lovers', 'music_vibes',
+                    'dance_life', 'comedy_central', 'motivation_daily', 'entrepreneur_hub', 'student_life',
+                    'gamer_zone', 'book_worm', 'movie_buff', 'sports_fan', 'car_enthusiast',
+                    'tech_reviews', 'gadget_geek', 'coding_ninja', 'design_inspiration', 'marketing_pro',
+                    'finance_tips', 'real_estate', 'stock_trader', 'crypto_news', 'nft_artist',
+                    'yoga_practice', 'meditation_guru', 'wellness_coach', 'nutrition_facts', 'recipe_share',
+                    'baking_love', 'coffee_addict', 'wine_tasting', 'street_food', 'restaurant_reviews'
+                ],
+                contentTypes: ['image', 'video', 'carousel', 'story', 'reel']
             },
             tiktok: {
                 icon: '🎵',
-                creators: ['genztechie', 'trendsetter', 'cryptoking', 'mindfulvibes', 'techtalks'],
-                contentTypes: ['video', 'live']
+                creators: [
+                    'genztechie', 'trendsetter', 'cryptoking', 'mindfulvibes', 'techtalks',
+                    'dance_viral', 'comedy_gold', 'life_hacks', 'cooking_quick', 'fashion_trends',
+                    'workout_motivation', 'study_tips', 'art_process', 'music_covers', 'pet_tricks',
+                    'travel_vlogs', 'food_reviews', 'makeup_tutorials', 'skin_care', 'hair_styles',
+                    'diy_projects', 'home_organization', 'plant_parent', 'gaming_clips', 'anime_fan',
+                    'movie_reviews', 'book_recommendations', 'language_learning', 'science_facts', 'history_lessons',
+                    'math_tricks', 'physics_fun', 'chemistry_experiments', 'biology_basics', 'psychology_tips',
+                    'relationship_advice', 'parenting_hacks', 'teacher_life', 'nurse_stories', 'doctor_diary',
+                    'lawyer_talks', 'engineer_builds', 'artist_creates', 'musician_jams', 'dancer_moves',
+                    'athlete_trains', 'chef_cooks', 'barista_brews', 'bartender_mixes', 'retail_reality'
+                ],
+                contentTypes: ['video', 'live', 'photo_slideshow']
             }
         };
 
-        const captions = [
+        // Expanded captions with various themes
+        const captionTemplates = [
+            // Tech & AI
             'This AI tool just revolutionized my entire workflow! Game changer 🤖',
-            'POV: You started investing in crypto at 22 and now understand money better',
+            'Finally tried ChatGPT for {task} and I\'m blown away 🤯',
+            'New app alert: {appname} is changing how we {action} 📱',
+            'Web3 is the future and here\'s why you should care 🌐',
+            'Just discovered this {tech} hack that saves me 2 hours daily ⏰',
+            
+            // Crypto & Finance
+            'POV: You started investing in crypto at 22 and now understand money better 💰',
+            'Breaking down {crypto} for beginners - swipe for simple explanation →',
+            'My portfolio is up {percent}% this month - here\'s my strategy 📈',
+            'Financial freedom starts with these 3 simple habits 💳',
+            'Why I\'m bullish on {token} for 2024 🚀',
+            
+            // Wellness & Mindfulness
             'Daily meditation practice that actually changed my life ✨',
-            'Building my first startup at 25 - here\'s what I learned',
-            'Why Gen Z is obsessed with productivity apps (and you should be too)',
-            'The mindfulness hack that reduces anxiety in 60 seconds',
-            'Crypto market analysis for beginners - simplified',
-            'Web3 development crash course - follow for more tips!',
-            'Tech trends that will dominate 2024 🚀',
-            'Mindful investing strategies for the digital generation'
+            '5-minute morning routine for mental clarity 🧘‍♀️',
+            'Your reminder to take a deep breath and reset 🌸',
+            'Anxiety hack that actually works - try this now 🦋',
+            'Self-care isn\'t selfish - normalize taking breaks 💚',
+            
+            // Business & Entrepreneurship
+            'Building my first startup at 25 - here\'s what I learned 🎯',
+            'From side hustle to 6 figures - the honest journey 💼',
+            'Quit my 9-5 to pursue my passion - no regrets 🔥',
+            'Business tip: {strategy} increased my sales by 300% 📊',
+            'Entrepreneurship isn\'t glamorous but it\'s worth it 💪',
+            
+            // Lifestyle & Fashion
+            'Outfit of the day - mixing high street with vintage finds 👗',
+            'Minimalist wardrobe challenge day 30 - life changing! 🎽',
+            'Thrift flip: $5 jacket transformed into designer look ✂️',
+            'Sustainable fashion tips that don\'t break the bank 🌱',
+            'Color theory changed how I dress - swipe to see how →',
+            
+            // Food & Cooking
+            '15-minute dinner recipe that tastes like it took hours 🍝',
+            'Meal prep Sunday - 5 meals for under $20 🥗',
+            'Gordon Ramsay approved this recipe and I\'m shook 👨‍🍳',
+            'Vegan {dish} that even meat lovers will enjoy 🌮',
+            'Restaurant {cuisine} at home - easier than you think! 🍜',
+            
+            // Fitness & Health
+            '30-day transformation - consistency is key 💪',
+            'No gym? No problem! Home workout that actually works 🏠',
+            'Lost 20lbs without giving up pizza - here\'s how 🍕',
+            'Morning run views hitting different today 🏃‍♀️',
+            'Form check: are you doing {exercise} correctly? 🏋️',
+            
+            // Travel & Adventure
+            'Hidden gem in {location} that tourists don\'t know about 🗺️',
+            'Solo travel changed my perspective on everything ✈️',
+            'Budget travel hack: {tip} saved me $500 💸',
+            'Sunrise at {landmark} was worth the 4am wake up 🌅',
+            'Digital nomad life: working from {country} this month 💻',
+            
+            // Entertainment & Pop Culture
+            'Did anyone else notice this detail in {show}? 🎬',
+            'Unpopular opinion: {celebrity} is actually underrated 🌟',
+            'This {year} song still hits different 🎵',
+            'Theory: {character} is the real villain - here\'s why 🎭',
+            'Recreating {celebrity}\'s iconic look on a budget 💄',
+            
+            // Education & Learning
+            'Study method that got me straight A\'s this semester 📚',
+            'Learning {language} - day 100 progress update 🗣️',
+            'Khan Academy > expensive tutors (and it\'s free!) 🎓',
+            'Note-taking app that changed my life: {appname} 📝',
+            'Why everyone should learn to code in 2024 💻',
+            
+            // DIY & Creativity
+            'Pinterest fail turned into something amazing 🎨',
+            'IKEA hack that looks like expensive furniture 🔨',
+            'Room makeover for under $100 - swipe for before/after 🏡',
+            'Upcycling old {item} into home decor 🌿',
+            'Art therapy: painting my feelings helped me heal 🖌️',
+            
+            // Humor & Trends
+            'Tell me you\'re {trait} without telling me you\'re {trait} 😂',
+            'POV: Your {relation} finds your TikTok account 👀',
+            'Things that live rent-free in my head: a thread 🧵',
+            'Rating {topic} as {character} - chaotic edition 🎲',
+            'No one: Absolutely no one: Me at 3am: {action} 🌙'
+        ];
+
+        const trendingTopics = [
+            '#normcore', '#homesteading', '#antipastaslad', '#bugatti', '#sustainability',
+            '#minimalism', '#plantbased', '#remotework', '#selfcare', '#productivity',
+            '#mentalhealth', '#sidehustle', '#budgeting', '#zerowaste', '#vintage',
+            '#streetstyle', '#mealprep', '#homeworkout', '#solotravel', '#studygram',
+            '#smallbusiness', '#cryptocurrency', '#nftart', '#mindfulness', '#veganuary',
+            '#techreview', '#bookstagram', '#filmtok', '#genzhumor', '#millenniallife'
         ];
 
         this.contentItems = [];
         const platform = platforms[this.currentPlatform];
 
-        for (let i = 0; i < 20; i++) {
+        // Generate 50-100 diverse content items
+        const contentCount = Math.floor(Math.random() * 50) + 50;
+        
+        for (let i = 0; i < contentCount; i++) {
             const creator = platform.creators[Math.floor(Math.random() * platform.creators.length)];
             const contentType = platform.contentTypes[Math.floor(Math.random() * platform.contentTypes.length)];
-            const caption = captions[Math.floor(Math.random() * captions.length)];
+            
+            // Generate dynamic caption
+            let caption = captionTemplates[Math.floor(Math.random() * captionTemplates.length)];
+            
+            // Replace placeholders
+            caption = caption.replace('{task}', ['coding', 'writing', 'designing', 'planning'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{appname}', ['Notion', 'Figma', 'Linear', 'Obsidian'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{action}', ['work', 'communicate', 'create', 'organize'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{tech}', ['productivity', 'automation', 'AI', 'workflow'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{crypto}', ['Bitcoin', 'Ethereum', 'DeFi', 'NFTs'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{percent}', Math.floor(Math.random() * 50) + 10);
+            caption = caption.replace('{token}', ['BTC', 'ETH', 'SOL', 'MATIC'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{strategy}', ['email marketing', 'social proof', 'content marketing', 'SEO'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{dish}', ['burger', 'pasta', 'tacos', 'curry'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{cuisine}', ['Italian', 'Japanese', 'Mexican', 'Thai'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{exercise}', ['squats', 'deadlifts', 'push-ups', 'planks'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{location}', ['Bali', 'Tokyo', 'Barcelona', 'Iceland'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{landmark}', ['Machu Picchu', 'Santorini', 'Mt. Fuji', 'Northern Lights'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{country}', ['Portugal', 'Thailand', 'Mexico', 'Dubai'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{show}', ['Stranger Things', 'The Office', 'Breaking Bad', 'Friends'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{celebrity}', ['Zendaya', 'Timothée Chalamet', 'Billie Eilish', 'Drake'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{year}', ['90s', '2000s', '2010s', '80s'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{character}', ['Walter White', 'Michael Scott', 'Eleven', 'Ross'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{language}', ['Spanish', 'Japanese', 'French', 'Korean'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{item}', ['jeans', 't-shirts', 'furniture', 'books'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{trait}', ['Gen Z', 'millennial', 'introvert', 'coffee addict'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{relation}', ['mom', 'boss', 'ex', 'crush'][Math.floor(Math.random() * 4)]);
+            caption = caption.replace('{topic}', ['foods', 'movies', 'songs', 'memes'][Math.floor(Math.random() * 4)]);
+            
+            // Add trending hashtags
+            const hashtagCount = Math.floor(Math.random() * 5) + 3;
+            const selectedHashtags = [];
+            for (let j = 0; j < hashtagCount; j++) {
+                selectedHashtags.push(trendingTopics[Math.floor(Math.random() * trendingTopics.length)]);
+            }
+            caption += ' ' + selectedHashtags.join(' ');
+            
+            // Generate realistic engagement metrics based on creator popularity
+            const isPopular = Math.random() > 0.7;
+            const baseViews = isPopular ? Math.floor(Math.random() * 500000) + 50000 : Math.floor(Math.random() * 50000) + 1000;
+            const engagementRate = Math.random() * 0.15 + 0.02; // 2-17% engagement
             
             this.contentItems.push({
                 id: `content_${i}`,
@@ -138,8 +319,12 @@ class BotLiveViewer {
                 creator,
                 caption,
                 hashtags: this.extractHashtags(caption),
-                likes: Math.floor(Math.random() * 50000) + 100,
-                timestamp: new Date(Date.now() - i * 60000).toISOString()
+                views: baseViews,
+                likes: Math.floor(baseViews * engagementRate),
+                comments: Math.floor(baseViews * engagementRate * 0.1),
+                shares: Math.floor(baseViews * engagementRate * 0.05),
+                saves: Math.floor(baseViews * engagementRate * 0.08),
+                timestamp: new Date(Date.now() - Math.floor(Math.random() * 86400000)).toISOString() // Random time within last 24h
             });
         }
     }

@@ -6,37 +6,17 @@
 class MarketingInsights {
   constructor() {
     this.charts = {};
-    this.trendData = {
-      normcore: {
-        name: 'Normcore Aesthetic',
-        data: [2.1, 3.4, 5.2, 8.7, 12.4, 15.8, 18.2],
-        growth: 234,
-        phase: 'rising'
-      },
-      homesteading: {
-        name: 'Homesteading Content',
-        data: [5.2, 8.1, 12.3, 18.7, 24.5, 28.7, 29.1],
-        growth: 567,
-        phase: 'peak'
-      },
-      antiPastaSalad: {
-        name: 'Anti-Pasta Salad',
-        data: [0.1, 0.3, 0.8, 1.9, 3.2, 4.2, 5.8],
-        growth: 892,
-        phase: 'emerging'
-      },
-      bugatti: {
-        name: 'Bugatti Lifestyle',
-        data: [3.2, 8.7, 15.4, 25.3, 35.8, 45.3, 48.9],
-        growth: 1240,
-        phase: 'viral'
-      }
-    };
+    this.currentTrends = [];
+    this.trendData = {};
+    this.timeframe = '7d';
+    this.platform = 'all';
     
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.fetchTrendData();
+    this.renderTrendCards();
     this.initializeTrendCharts();
     this.initializeDemographicsCharts();
     this.setupEventListeners();
@@ -44,11 +24,467 @@ class MarketingInsights {
   }
 
   /**
+   * Fetch trend data from stored bot data
+   */
+  async fetchTrendData() {
+    try {
+      // Get stored bot data
+      const storedData = localStorage.getItem('botSessionData');
+      const dateRange = this.getDateRange(this.timeframe);
+      
+      if (storedData) {
+        const sessions = JSON.parse(storedData);
+        const allContent = [];
+        
+        // Extract all content from sessions
+        sessions.forEach(session => {
+          if (session.content && Array.isArray(session.content)) {
+            session.content.forEach(item => {
+              if (this.platform === 'all' || item.platform === this.platform) {
+                allContent.push(item);
+              }
+            });
+          }
+        });
+        
+        // Analyze trends from content
+        this.currentTrends = this.analyzeTrends(allContent);
+        this.updateTrendData();
+      } else {
+        // Use default data if no bot data available
+        this.useDefaultTrends();
+      }
+    } catch (error) {
+      console.error('Error fetching trend data:', error);
+      this.useDefaultTrends();
+    }
+  }
+
+  /**
+   * Analyze content for trends
+   */
+  analyzeTrends(content) {
+    const trendMap = new Map();
+    const hashtagMap = new Map();
+    const keywordMap = new Map();
+    
+    // Process each content item
+    content.forEach(item => {
+      // Count hashtags
+      if (item.hashtags) {
+        item.hashtags.forEach(tag => {
+          const key = tag.toLowerCase();
+          if (!hashtagMap.has(key)) {
+            hashtagMap.set(key, {
+              name: tag,
+              count: 0,
+              engagement: 0,
+              reach: 0,
+              contents: []
+            });
+          }
+          const trend = hashtagMap.get(key);
+          trend.count++;
+          trend.engagement += (item.likes || 0) + (item.comments || 0) * 2 + (item.shares || 0) * 3;
+          trend.reach += item.views || 0;
+          trend.contents.push(item);
+        });
+      }
+      
+      // Extract keywords from captions
+      if (item.caption) {
+        const words = item.caption.toLowerCase().split(/\s+/);
+        const keywords = words.filter(word => 
+          word.length > 4 && 
+          !['with', 'this', 'that', 'from', 'have', 'been'].includes(word)
+        );
+        
+        keywords.forEach(keyword => {
+          if (!keywordMap.has(keyword)) {
+            keywordMap.set(keyword, {
+              name: keyword,
+              count: 0,
+              engagement: 0,
+              reach: 0,
+              contents: []
+            });
+          }
+          const trend = keywordMap.get(keyword);
+          trend.count++;
+          trend.engagement += (item.likes || 0) + (item.comments || 0) * 2 + (item.shares || 0) * 3;
+          trend.reach += item.views || 0;
+          trend.contents.push(item);
+        });
+      }
+    });
+    
+    // Combine hashtags and keywords
+    const allTrends = [...hashtagMap.values(), ...keywordMap.values()];
+    
+    // Calculate scores and sort
+    allTrends.forEach(trend => {
+      trend.engagementRate = trend.reach > 0 ? (trend.engagement / trend.reach) * 100 : 0;
+      trend.viralScore = this.calculateViralScore(trend);
+      trend.growth = this.calculateGrowth(trend.contents);
+      trend.phase = this.determineTrendPhase(trend);
+    });
+    
+    // Sort by viral score and return top trends
+    return allTrends
+      .sort((a, b) => b.viralScore - a.viralScore)
+      .slice(0, 4)
+      .map(trend => ({
+        identifier: trend.name,
+        viralScore: Math.round(trend.viralScore),
+        reach: trend.reach,
+        engagement: trend.engagement,
+        engagementRate: trend.engagementRate.toFixed(1),
+        growth: trend.growth,
+        phase: trend.phase,
+        data: this.generateTrendHistory(trend.contents)
+      }));
+  }
+
+  /**
+   * Calculate viral score
+   */
+  calculateViralScore(trend) {
+    const reachScore = Math.min(trend.reach / 1000000 * 25, 25);
+    const engagementScore = Math.min(trend.engagementRate * 5, 25);
+    const countScore = Math.min(trend.count / 100 * 25, 25);
+    const growthScore = Math.min(Math.abs(trend.growth || 0) / 100 * 25, 25);
+    
+    return reachScore + engagementScore + countScore + growthScore;
+  }
+
+  /**
+   * Calculate growth rate
+   */
+  calculateGrowth(contents) {
+    if (contents.length < 2) return 0;
+    
+    // Sort by timestamp
+    const sorted = contents.sort((a, b) => 
+      new Date(a.timestamp || 0) - new Date(b.timestamp || 0)
+    );
+    
+    const midpoint = Math.floor(sorted.length / 2);
+    const firstHalf = sorted.slice(0, midpoint);
+    const secondHalf = sorted.slice(midpoint);
+    
+    const firstEngagement = firstHalf.reduce((sum, item) => 
+      sum + (item.likes || 0) + (item.comments || 0) + (item.shares || 0), 0
+    );
+    const secondEngagement = secondHalf.reduce((sum, item) => 
+      sum + (item.likes || 0) + (item.comments || 0) + (item.shares || 0), 0
+    );
+    
+    if (firstEngagement === 0) return 100;
+    return Math.round(((secondEngagement - firstEngagement) / firstEngagement) * 100);
+  }
+
+  /**
+   * Determine trend phase
+   */
+  determineTrendPhase(trend) {
+    if (trend.viralScore >= 80) return 'viral';
+    if (trend.viralScore >= 60 && trend.growth > 100) return 'rising';
+    if (trend.viralScore >= 60 && trend.growth < 20) return 'peak';
+    if (trend.growth > 500) return 'emerging';
+    return 'stable';
+  }
+
+  /**
+   * Generate trend history data
+   */
+  generateTrendHistory(contents) {
+    const days = 7;
+    const history = new Array(days).fill(0);
+    const now = new Date();
+    
+    contents.forEach(item => {
+      const itemDate = new Date(item.timestamp || now);
+      const daysAgo = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
+      
+      if (daysAgo >= 0 && daysAgo < days) {
+        const index = days - 1 - daysAgo;
+        history[index] += (item.views || 0) / 1000000; // Convert to millions
+      }
+    });
+    
+    // Generate cumulative data
+    for (let i = 1; i < history.length; i++) {
+      history[i] += history[i - 1];
+    }
+    
+    return history.map(val => Math.round(val * 10) / 10);
+  }
+
+  /**
+   * Update trend data structure
+   */
+  updateTrendData() {
+    this.trendData = {};
+    
+    this.currentTrends.forEach((trend, index) => {
+      const key = `trend${index}`;
+      this.trendData[key] = {
+        name: trend.identifier,
+        data: trend.data,
+        growth: trend.growth,
+        phase: trend.phase,
+        viralScore: trend.viralScore,
+        reach: trend.reach,
+        engagementRate: trend.engagementRate
+      };
+    });
+  }
+
+  /**
+   * Use default trends as fallback
+   */
+  useDefaultTrends() {
+    this.currentTrends = [
+      {
+        identifier: 'normcore',
+        viralScore: 87,
+        reach: 12400000,
+        engagementRate: '8.7',
+        growth: 234,
+        phase: 'rising',
+        data: [2.1, 3.4, 5.2, 8.7, 12.4, 15.8, 18.2]
+      },
+      {
+        identifier: 'homesteading',
+        viralScore: 92,
+        reach: 28700000,
+        engagementRate: '11.2',
+        growth: 567,
+        phase: 'peak',
+        data: [5.2, 8.1, 12.3, 18.7, 24.5, 28.7, 29.1]
+      },
+      {
+        identifier: 'antipastaslad',
+        viralScore: 76,
+        reach: 4200000,
+        engagementRate: '9.8',
+        growth: 892,
+        phase: 'emerging',
+        data: [0.1, 0.3, 0.8, 1.9, 3.2, 4.2, 5.8]
+      },
+      {
+        identifier: 'bugatti',
+        viralScore: 95,
+        reach: 45300000,
+        engagementRate: '13.5',
+        growth: 1240,
+        phase: 'viral',
+        data: [3.2, 8.7, 15.4, 25.3, 35.8, 45.3, 48.9]
+      }
+    ];
+    
+    this.updateTrendData();
+  }
+
+  /**
+   * Get date range for timeframe
+   */
+  getDateRange(timeframe) {
+    const now = new Date();
+    const start = new Date();
+    
+    switch(timeframe) {
+      case '24h':
+        start.setDate(now.getDate() - 1);
+        break;
+      case '7d':
+        start.setDate(now.getDate() - 7);
+        break;
+      case '30d':
+        start.setDate(now.getDate() - 30);
+        break;
+    }
+    
+    return { start, end: now };
+  }
+
+  /**
+   * Render trend cards dynamically
+   */
+  renderTrendCards() {
+    const container = document.querySelector('.trend-cards-grid');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    this.currentTrends.forEach((trend, index) => {
+      const card = this.createTrendCard(trend, index);
+      container.appendChild(card);
+    });
+  }
+
+  /**
+   * Create trend card element
+   */
+  createTrendCard(trend, index) {
+    const card = document.createElement('div');
+    card.className = `trend-card ${trend.phase}`;
+    
+    card.innerHTML = `
+      <div class="trend-header">
+        <div class="trend-title">
+          <h3>${this.formatTrendName(trend.identifier)}</h3>
+          <span class="trend-badge ${trend.phase}">${this.formatPhase(trend.phase)}</span>
+        </div>
+        <div class="trend-score">
+          <span class="score-label">Viral Score</span>
+          <span class="score-value">${trend.viralScore}</span>
+        </div>
+      </div>
+      <div class="trend-metrics">
+        <div class="metric-item">
+          <span class="metric-label">Total Reach</span>
+          <span class="metric-value">${this.formatNumber(trend.reach)}</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Engagement Rate</span>
+          <span class="metric-value">${trend.engagementRate}%</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">Growth</span>
+          <span class="metric-value ${trend.growth > 0 ? 'positive' : 'negative'}">+${trend.growth}%</span>
+        </div>
+      </div>
+      <div class="trend-insights">
+        <h4>Marketing Opportunities:</h4>
+        <ul>
+          ${this.generateInsightsList(trend)}
+        </ul>
+      </div>
+      <div class="trend-chart">
+        <canvas id="trendChart${index}"></canvas>
+      </div>
+    `;
+    
+    return card;
+  }
+
+  /**
+   * Format trend name
+   */
+  formatTrendName(identifier) {
+    const nameMap = {
+      'normcore': 'Normcore Aesthetic',
+      'homesteading': 'Homesteading Content',
+      'antipastaslad': 'Anti-Pasta Salad',
+      'bugatti': 'Bugatti Lifestyle'
+    };
+    
+    return nameMap[identifier.toLowerCase()] || 
+           identifier.charAt(0).toUpperCase() + identifier.slice(1);
+  }
+
+  /**
+   * Format phase name
+   */
+  formatPhase(phase) {
+    const phaseMap = {
+      'emerging': 'Emerging',
+      'rising': 'Rising',
+      'peak': 'At Peak',
+      'viral': 'Viral',
+      'stable': 'Stable'
+    };
+    
+    return phaseMap[phase] || phase;
+  }
+
+  /**
+   * Format large numbers
+   */
+  formatNumber(num) {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  }
+
+  /**
+   * Generate insights list for trend
+   */
+  generateInsightsList(trend) {
+    const insights = {
+      'normcore': [
+        'Target Gen Z and younger millennials seeking authenticity',
+        'Partner with micro-influencers in fashion/lifestyle',
+        'Focus on "anti-trend" messaging and simplicity'
+      ],
+      'homesteading': [
+        'Sustainable living and eco-friendly product placement',
+        'DIY tools and supplies partnerships',
+        'Educational content series potential'
+      ],
+      'antipastaslad': [
+        'Food brands can create recipe variations',
+        'Grocery delivery services partnership potential',
+        'Quick recipe content series opportunity'
+      ],
+      'bugatti': [
+        'Luxury brand aspirational campaigns',
+        'Success mindset content partnerships',
+        'High-end lifestyle product placement'
+      ]
+    };
+    
+    const defaultInsights = [
+      `Leverage ${trend.engagementRate}% engagement rate`,
+      `Target content to ${trend.phase} trend phase`,
+      `Capitalize on ${trend.growth}% growth momentum`
+    ];
+    
+    const trendInsights = insights[trend.identifier.toLowerCase()] || defaultInsights;
+    return trendInsights.map(insight => `<li>${insight}</li>`).join('');
+  }
+
+  /**
    * Initialize trend line charts
    */
   initializeTrendCharts() {
+    // Wait for DOM to update
+    setTimeout(() => {
+      this.currentTrends.forEach((trend, index) => {
+        this.initializeSingleTrendChart(trend, index);
+      });
+    }, 100);
+  }
+
+  /**
+   * Initialize single trend chart
+   */
+  initializeSingleTrendChart(trend, index) {
+    const chartId = `trendChart${index}`;
+    const canvas = document.getElementById(chartId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    const colors = ['#00ff88', '#ffbb33', '#00d4ff', '#ff4757'];
+    const color = colors[index % colors.length];
+    
     const chartOptions = {
       type: 'line',
+      data: {
+        labels: this.generateTimeLabels(),
+        datasets: [{
+          label: 'Reach (Millions)',
+          data: trend.data,
+          borderColor: color,
+          backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+          tension: 0.4,
+          fill: true
+        }]
+      },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -91,73 +527,7 @@ class MarketingInsights {
       }
     };
 
-    // Normcore Chart
-    const normcoreCtx = document.getElementById('normcoreChart').getContext('2d');
-    this.charts.normcore = new Chart(normcoreCtx, {
-      ...chartOptions,
-      data: {
-        labels: this.generateTimeLabels(),
-        datasets: [{
-          label: 'Reach (Millions)',
-          data: this.trendData.normcore.data,
-          borderColor: '#00ff88',
-          backgroundColor: 'rgba(0, 255, 136, 0.1)',
-          tension: 0.4,
-          fill: true
-        }]
-      }
-    });
-
-    // Homesteading Chart
-    const homesteadingCtx = document.getElementById('homesteadingChart').getContext('2d');
-    this.charts.homesteading = new Chart(homesteadingCtx, {
-      ...chartOptions,
-      data: {
-        labels: this.generateTimeLabels(),
-        datasets: [{
-          label: 'Reach (Millions)',
-          data: this.trendData.homesteading.data,
-          borderColor: '#ffbb33',
-          backgroundColor: 'rgba(255, 187, 51, 0.1)',
-          tension: 0.4,
-          fill: true
-        }]
-      }
-    });
-
-    // Anti-Pasta Salad Chart
-    const antiPastaCtx = document.getElementById('antiPastaChart').getContext('2d');
-    this.charts.antiPasta = new Chart(antiPastaCtx, {
-      ...chartOptions,
-      data: {
-        labels: this.generateTimeLabels(),
-        datasets: [{
-          label: 'Reach (Millions)',
-          data: this.trendData.antiPastaSalad.data,
-          borderColor: '#00d4ff',
-          backgroundColor: 'rgba(0, 212, 255, 0.1)',
-          tension: 0.4,
-          fill: true
-        }]
-      }
-    });
-
-    // Bugatti Chart
-    const bugattiCtx = document.getElementById('bugattiChart').getContext('2d');
-    this.charts.bugatti = new Chart(bugattiCtx, {
-      ...chartOptions,
-      data: {
-        labels: this.generateTimeLabels(),
-        datasets: [{
-          label: 'Reach (Millions)',
-          data: this.trendData.bugatti.data,
-          borderColor: '#ff4757',
-          backgroundColor: 'rgba(255, 71, 87, 0.1)',
-          tension: 0.4,
-          fill: true
-        }]
-      }
-    });
+    this.charts[`trend${index}`] = new Chart(ctx, chartOptions);
   }
 
   /**
@@ -296,26 +666,22 @@ class MarketingInsights {
   /**
    * Update charts based on timeframe
    */
-  updateTimeframe(timeframe) {
-    // Simulate different data for different timeframes
-    const multiplier = timeframe === '24h' ? 0.1 : timeframe === '7d' ? 1 : 4;
-    
-    Object.keys(this.trendData).forEach(trend => {
-      const chart = this.charts[trend];
-      if (chart) {
-        const newData = this.trendData[trend].data.map(value => value * multiplier);
-        chart.data.datasets[0].data = newData;
-        chart.update();
-      }
-    });
+  async updateTimeframe(timeframe) {
+    this.timeframe = timeframe;
+    await this.fetchTrendData();
+    this.renderTrendCards();
+    this.initializeTrendCharts();
+    this.showNotification(`Updated to show ${timeframe} data`);
   }
 
   /**
    * Filter data by platform
    */
-  filterByPlatform(platform) {
-    // In a real implementation, this would filter actual data
-    console.log('Filtering by platform:', platform);
+  async filterByPlatform(platform) {
+    this.platform = platform;
+    await this.fetchTrendData();
+    this.renderTrendCards();
+    this.initializeTrendCharts();
     this.showNotification(`Showing ${platform === 'all' ? 'all platforms' : platform + ' only'}`);
   }
 
@@ -333,12 +699,12 @@ class MarketingInsights {
    */
   simulateRealTimeUpdate() {
     // Add slight variations to trend data
-    Object.keys(this.trendData).forEach(trend => {
-      const chart = this.charts[trend];
+    this.currentTrends.forEach((trend, index) => {
+      const chart = this.charts[`trend${index}`];
       if (chart && chart.data.datasets[0].data.length > 0) {
         const currentData = [...chart.data.datasets[0].data];
         const lastValue = currentData[currentData.length - 1];
-        const variation = (Math.random() - 0.5) * 2; // -1 to 1
+        const variation = (Math.random() - 0.5) * 0.5; // Small variation
         const newValue = Math.max(0, lastValue + variation);
         
         // Update the last data point

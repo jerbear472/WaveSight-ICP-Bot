@@ -1,5 +1,26 @@
 /* Bot Dashboard Specific Styles */
 
+/* Page Title Section */
+.page-title-section {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-title-section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.page-description {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
 /* Navigation Menu */
 .main-navigation {
   background: rgba(0, 0, 0, 0.3);

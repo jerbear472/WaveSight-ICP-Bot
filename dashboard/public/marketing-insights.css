@@ -1,5 +1,32 @@
 /* Marketing Insights Dashboard Styles */
 
+/* Page Title Section */
+.page-title-section {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
+  padding: 3rem 2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page-title-section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.page-description {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
 /* Viral Trends Section */
 .viral-trends-section {
   margin-bottom: 3rem;
@@ -220,6 +247,10 @@
 /* Demographics Section */
 .demographics-section {
   margin-bottom: 3rem;
+  background: var(--card-background);
+  border-radius: 1rem;
+  padding: 2rem;
+  border: 1px solid var(--border-color);
 }
 
 .demographics-section h2 {
@@ -227,11 +258,14 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .demographics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 2rem;
 }
 
@@ -239,41 +273,62 @@
   background: var(--gradient-dark);
   border: 1px solid var(--border-color);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 2rem;
   box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+}
+
+.demo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+  border-color: var(--primary-color);
 }
 
 .demo-card h3 {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .geo-stats {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .geo-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 0.75rem;
   border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.geo-item:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: var(--primary-color);
 }
 
 .country {
   font-weight: 500;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
 }
 
 .percentage {
   font-size: 1.25rem;
   font-weight: 700;
+  color: var(--primary-color);
+  font-family: 'Orbitron', monospace;
   color: var(--primary-color);
   font-family: 'Orbitron', monospace;
 }

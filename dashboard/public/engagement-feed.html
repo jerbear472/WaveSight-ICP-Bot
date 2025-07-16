@@ -14,51 +14,23 @@
     <div class="app">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="page-header">
-                    <div class="logo-container">
-                        <a href="/" class="logo-link">
-                            <img src="logo2.png" alt="WAVESITE" class="main-logo">
-                            <h1 class="brand-name">WAVESITE</h1>
-                        </a>
-                    </div>
-                    <div class="page-title-section">
-                        <h2>🌊 Content Wave Feed</h2>
-                        <span class="tagline">Discover what your Surfer Bots found in the content waves</span>
-                    </div>
+            <div class="header-container">
+                <div class="logo-section">
+                    <a href="/" class="logo-link">
+                        <img src="logo2.png" alt="WAVESITE" class="main-logo">
+                        <h1 class="brand-name">WAVESITE</h1>
+                    </a>
                 </div>
-                <div class="header-controls">
-                    <div class="feed-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Live Views</span>
-                            <span class="stat-value" id="liveViews">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Avg Dwell</span>
-                            <span class="stat-value" id="avgDwell">0ms</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Engagement Rate</span>
-                            <span class="stat-value" id="engagementRate">0%</span>
-                        </div>
-                    </div>
-                    <div class="view-controls">
-                        <button class="control-btn active" data-view="grid" onclick="switchView('grid')">
-                            📊 Grid View
-                        </button>
-                        <button class="control-btn" data-view="stream" onclick="switchView('stream')">
-                            📱 Stream View
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Navigation Menu -->
-            <nav class="main-navigation">
-                <div class="nav-container">
+                
+                <!-- Navigation Menu -->
+                <nav class="main-navigation">
                     <a href="/" class="nav-item">
                         <span class="nav-icon">📊</span>
                         <span class="nav-label">Dashboard</span>
+                    </a>
+                    <a href="/marketing-insights.html" class="nav-item">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Marketing Insights</span>
                     </a>
                     <a href="/bot-live-view.html" class="nav-item">
                         <span class="nav-icon">🏄‍♀️</span>
@@ -72,9 +44,40 @@
                         <span class="nav-icon">🤖</span>
                         <span class="nav-label">Bot Control</span>
                     </a>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="view-controls">
+                        <button class="control-btn active" data-view="grid" onclick="switchView('grid')">
+                            📊 Grid
+                        </button>
+                        <button class="control-btn" data-view="stream" onclick="switchView('stream')">
+                            📱 Stream
+                        </button>
+                    </div>
                 </div>
-            </nav>
+            </div>
         </header>
+        
+        <!-- Page Title Section (Below Header) -->
+        <section class="page-title-section">
+            <h2>🌊 Content Wave Feed</h2>
+            <p class="page-description">Discover what your Surfer Bots found in the content waves</p>
+            <div class="feed-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Live Views</span>
+                    <span class="stat-value" id="liveViews">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg Dwell</span>
+                    <span class="stat-value" id="avgDwell">0ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Engagement Rate</span>
+                    <span class="stat-value" id="engagementRate">0%</span>
+                </div>
+            </div>
+        </section>
 
         <!-- Purpose Explanation -->
         <section class="explanation-section">

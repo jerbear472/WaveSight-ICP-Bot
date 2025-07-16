@@ -14,57 +14,51 @@
     <div class="app">
         <!-- Header -->
         <header class="header">
-            <div class="header-top">
-                <div class="brand-wrapper">
-                    <div class="logo-container">
-                        <img src="logo2.png" alt="WAVESITE" class="main-logo">
-                        <h1 class="brand-name">WAVESITE</h1>
-                    </div>
-                    <p class="main-tagline">See What's Coming Before it Hits...</p>
+            <div class="header-container">
+                <div class="logo-section">
+                    <img src="logo2.png" alt="WAVESITE" class="main-logo">
+                    <h1 class="brand-name">WAVESITE</h1>
                 </div>
-                <div class="header-info">
-                    <p class="sub-tagline">Real-time trending analytics powered by Surfer Bot data</p>
-                    <p class="description">Track viral content, analyze sentiment patterns, and discover emerging trends across digital platforms with advanced AI-powered insights.</p>
-                </div>
-                <div class="header-controls">
+                
+                <!-- Navigation Menu -->
+                <nav class="main-navigation">
+                    <a href="/" class="nav-item active">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                    <a href="/marketing-insights.html" class="nav-item">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Marketing Insights</span>
+                    </a>
+                    <a href="/bot-live-view.html" class="nav-item">
+                        <span class="nav-icon">🏄‍♀️</span>
+                        <span class="nav-label">Live Surfer Bot</span>
+                    </a>
+                    <a href="/engagement-feed.html" class="nav-item">
+                        <span class="nav-icon">🌊</span>
+                        <span class="nav-label">Content Wave Feed</span>
+                    </a>
+                    <a href="/bot-dashboard.html" class="nav-item">
+                        <span class="nav-icon">🤖</span>
+                        <span class="nav-label">Bot Control</span>
+                    </a>
+                </nav>
+                
+                <div class="header-actions">
                     <button class="refresh-btn" onclick="refreshData()">
                         <span class="icon">⟳</span>
                         Refresh
                     </button>
                 </div>
             </div>
-            
-            <!-- Navigation Menu -->
-            <nav class="main-navigation">
-                <div class="nav-container">
-                    <a href="/" class="nav-item active">
-                        <span class="nav-icon">📊</span>
-                        <span class="nav-label">Dashboard</span>
-                        <span class="nav-description">Overview & Analytics</span>
-                    </a>
-                    <a href="/marketing-insights.html" class="nav-item">
-                        <span class="nav-icon">📈</span>
-                        <span class="nav-label">Marketing Insights</span>
-                        <span class="nav-description">Trend Analysis</span>
-                    </a>
-                    <a href="/bot-live-view.html" class="nav-item">
-                        <span class="nav-icon">🏄‍♀️</span>
-                        <span class="nav-label">Live Surfer Bot</span>
-                        <span class="nav-description">Real-time Activity</span>
-                    </a>
-                    <a href="/engagement-feed.html" class="nav-item">
-                        <span class="nav-icon">🌊</span>
-                        <span class="nav-label">Content Wave Feed</span>
-                        <span class="nav-description">Discovered Content</span>
-                    </a>
-                    <a href="/bot-dashboard.html" class="nav-item">
-                        <span class="nav-icon">🤖</span>
-                        <span class="nav-label">Bot Control</span>
-                        <span class="nav-description">Manage Sessions</span>
-                    </a>
-                </div>
-            </nav>
         </header>
+        
+        <!-- Hero Section (Below Header) -->
+        <section class="hero-section">
+            <p class="main-tagline">See What's Coming Before it Hits...</p>
+            <p class="sub-tagline">Real-time trending analytics powered by Surfer Bot data</p>
+            <p class="description">Track viral content, analyze sentiment patterns, and discover emerging trends across digital platforms with advanced AI-powered insights.</p>
+        </section>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -342,11 +336,13 @@
                             <div class="control-group">
                                 <label for="profileType">ICP Profile:</label>
                                 <select id="profileType">
-                                    <option value="gen_z_tech_enthusiast">Gen Z Tech Enthusiast</option>
-                                    <option value="millennial_professional">Millennial Professional</option>
-                                    <option value="fashion_beauty_enthusiast">Fashion & Beauty Enthusiast</option>
-                                    <option value="fitness_health_focused">Fitness & Health Focused</option>
-                                    <option value="parent_family_oriented">Parent & Family Oriented</option>
+                                    <option value="gen_z_tech_enthusiast">👩‍💻 Tech Wave Rider (Gen Z)</option>
+                                    <option value="millennial_entrepreneur">🚀 Business Wave Rider (Millennial)</option>
+                                    <option value="crypto_investor">₿ Crypto Wave Rider</option>
+                                    <option value="mindfulness_seeker">🧘 Mindful Wave Rider</option>
+                                    <option value="fashion_beauty_enthusiast">💄 Fashion Wave Rider</option>
+                                    <option value="fitness_health_focused">💪 Fitness Wave Rider</option>
+                                    <option value="parent_family_oriented">👨‍👩‍👧 Family Wave Rider</option>
                                 </select>
                             </div>
                             <div class="control-group">

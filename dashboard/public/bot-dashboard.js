@@ -216,44 +216,153 @@ class BotDashboard {
     }
 
     generateMockContent(platform) {
-        const usernames = ['techguru22', 'aiexplorer', 'cryptokid', 'mindfultech', 'startuplife', 'genztechie'];
-        const captions = [
-            'This AI tool just revolutionized my workflow! Game changer 🤖',
-            'Crypto market analysis for beginners - what I wish I knew at 18',
-            'Building my first startup at 22 - here\'s what I learned',
-            'Meditation + technology = the perfect productivity combo ✨',
-            'Web3 development crash course - follow for more tips!',
-            'Mindful investing strategies for the digital generation'
-        ];
-        const hashtags = [
-            ['#AI', '#productivity', '#tech'],
-            ['#crypto', '#investing', '#genz'],
-            ['#startup', '#entrepreneur', '#motivation'],
-            ['#mindfulness', '#wellness', '#balance'],
-            ['#web3', '#blockchain', '#developer'],
-            ['#mindful', '#investing', '#money']
+        // Diverse creator pool
+        const creatorPools = {
+            instagram: [
+                'techguru22', 'aiexplorer', 'cryptokid', 'mindfultech', 'startuplife',
+                'fashionista_x', 'healthyvibes', 'travel_stories', 'foodie_adventures', 'fitness_journey',
+                'art_collective', 'photo_daily', 'nature_lover', 'city_explorer', 'lifestyle_blog',
+                'beauty_tips', 'home_decor', 'diy_crafts', 'pet_lovers', 'music_vibes',
+                'dance_life', 'comedy_central', 'motivation_daily', 'entrepreneur_hub', 'student_life',
+                'gamer_zone', 'book_worm', 'movie_buff', 'sports_fan', 'car_enthusiast',
+                'tech_reviews', 'gadget_geek', 'coding_ninja', 'design_inspiration', 'marketing_pro'
+            ],
+            tiktok: [
+                'genztechie', 'trendsetter', 'cryptoking', 'mindfulvibes', 'techtalks',
+                'dance_viral', 'comedy_gold', 'life_hacks', 'cooking_quick', 'fashion_trends',
+                'workout_motivation', 'study_tips', 'art_process', 'music_covers', 'pet_tricks',
+                'travel_vlogs', 'food_reviews', 'makeup_tutorials', 'skin_care', 'hair_styles',
+                'diy_projects', 'home_organization', 'plant_parent', 'gaming_clips', 'anime_fan'
+            ]
+        };
+
+        // Dynamic caption templates
+        const captionTemplates = [
+            // Tech/AI related
+            'Just discovered {tool} and it\'s revolutionizing my {process}! 🤖',
+            'AI is changing {industry} faster than we thought possible 🚀',
+            'The future of {tech} is here and it\'s incredible',
+            'How I automated {task} and saved 10 hours per week',
+            
+            // Trending content
+            '#normcore aesthetic taking over - minimalism is the new luxury',
+            'Started #homesteading and never looked back - here\'s why',
+            'The #antipastaslad trend is actually genius - try this recipe!',
+            'Why everyone\'s talking about #bugatti mindset in 2024',
+            
+            // Lifestyle
+            'Morning routine that changed my entire life perspective ✨',
+            'Thrift haul: found {item} for just ${price}!',
+            'Plant parent tip: {tip} saved all my dying plants 🌿',
+            'Home makeover on a budget - swipe to see transformation',
+            
+            // Business/Finance
+            'From 0 to {number}k followers in 3 months - here\'s how',
+            'Side hustle idea that\'s making people ${amount}/month',
+            'Investment tip: {strategy} for beginners',
+            'Why I quit my {salary}k job to pursue my passion',
+            
+            // Health/Wellness
+            'Workout routine that actually fits into busy schedule 💪',
+            '5-minute meditation changed my anxiety levels completely',
+            'Meal prep Sunday: {number} meals for under ${price}',
+            'Mental health reminder: it\'s okay to {action}',
+            
+            // Entertainment
+            'POV: You\'re {scenario} and {outcome} happens',
+            'Tell me you\'re {trait} without telling me',
+            'Things that live rent-free in my head',
+            'Rating {topic} but make it chaotic'
         ];
 
-        const randomIndex = Math.floor(Math.random() * usernames.length);
-        const likes = Math.floor(Math.random() * 50000) + 1000;
+        const hashtagGroups = [
+            ['#viral', '#trending', '#fyp', '#explore', '#contentcreator'],
+            ['#normcore', '#aesthetic', '#minimalism', '#style', '#fashion'],
+            ['#homesteading', '#sustainable', '#offgrid', '#selfsufficient', '#garden'],
+            ['#antipastaslad', '#foodie', '#recipe', '#cooking', '#viral'],
+            ['#bugatti', '#mindset', '#success', '#motivation', '#luxury'],
+            ['#ai', '#tech', '#future', '#innovation', '#startup'],
+            ['#crypto', '#bitcoin', '#ethereum', '#investing', '#web3'],
+            ['#wellness', '#mindfulness', '#selfcare', '#mentalhealth', '#meditation'],
+            ['#fitness', '#workout', '#gym', '#health', '#transformation'],
+            ['#entrepreneur', '#business', '#hustle', '#success', '#growth']
+        ];
+
+        // Select random creator
+        const creators = creatorPools[platform] || creatorPools.instagram;
+        const creator = creators[Math.floor(Math.random() * creators.length)];
+        
+        // Generate dynamic caption
+        let caption = captionTemplates[Math.floor(Math.random() * captionTemplates.length)];
+        
+        // Replace placeholders
+        caption = caption.replace('{tool}', ['ChatGPT', 'Midjourney', 'Notion AI', 'GitHub Copilot'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{process}', ['workflow', 'content creation', 'coding', 'design process'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{industry}', ['marketing', 'education', 'healthcare', 'finance'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{tech}', ['AI', 'blockchain', 'quantum computing', 'AR/VR'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{task}', ['email responses', 'data analysis', 'content scheduling', 'invoicing'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{item}', ['vintage jacket', 'designer bag', 'rare vinyl', 'retro camera'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{price}', Math.floor(Math.random() * 50) + 5);
+        caption = caption.replace('{tip}', ['misting daily', 'bottom watering', 'indirect sunlight', 'humidity trick'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{number}', Math.floor(Math.random() * 100) + 10);
+        caption = caption.replace('{amount}', (Math.floor(Math.random() * 50) + 10) * 100);
+        caption = caption.replace('{strategy}', ['dollar cost averaging', 'index funds', 'dividend investing', 'compound interest'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{salary}', Math.floor(Math.random() * 50) + 50);
+        caption = caption.replace('{scenario}', ['at a party', 'on a first date', 'in a job interview', 'meeting your ex'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{outcome}', ['this happens', 'chaos ensues', 'everything changes', 'plot twist'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{trait}', ['Gen Z', 'millennial', 'introvert', 'coffee addict'][Math.floor(Math.random() * 4)]);
+        caption = caption.replace('{topic}', ['movies', 'songs', 'foods', 'places'][Math.floor(Math.random() * 4)]);
+        
+        // Generate engagement metrics
+        const isViral = Math.random() > 0.85;
+        const isTrending = Math.random() > 0.7;
+        const baseViews = isViral ? Math.floor(Math.random() * 1000000) + 100000 : 
+                         isTrending ? Math.floor(Math.random() * 100000) + 10000 : 
+                         Math.floor(Math.random() * 50000) + 1000;
+        const engagementRate = isViral ? 0.12 : isTrending ? 0.08 : 0.05;
+        const likes = Math.floor(baseViews * engagementRate);
         
         return {
             id: `${platform}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            username: usernames[randomIndex],
-            caption: captions[randomIndex],
-            hashtags: hashtags[randomIndex],
+            username: creator,
+            caption: caption,
+            hashtags: hashtagGroups[Math.floor(Math.random() * hashtagGroups.length)],
             likes: this.formatNumber(likes),
-            platform: platform
+            views: this.formatNumber(baseViews),
+            comments: this.formatNumber(Math.floor(likes * 0.1)),
+            shares: this.formatNumber(Math.floor(likes * 0.05)),
+            platform: platform,
+            isViral: isViral,
+            isTrending: isTrending
         };
     }
 
     simulateTrendDetection(content) {
-        const likesNum = this.parseNumber(content.likes);
-        const hasViralKeywords = content.caption.toLowerCase().includes('ai') || 
-                                content.caption.toLowerCase().includes('crypto') ||
-                                content.caption.toLowerCase().includes('viral');
+        // Check if already marked as viral or trending
+        if (content.isViral || content.isTrending) return true;
         
-        return likesNum > 10000 || hasViralKeywords || Math.random() < 0.2;
+        const likesNum = this.parseNumber(content.likes);
+        const viewsNum = this.parseNumber(content.views || content.likes);
+        
+        // Check for trending hashtags
+        const trendingHashtags = ['#normcore', '#homesteading', '#antipastaslad', '#bugatti'];
+        const hasTrendingHashtag = content.hashtags.some(tag => 
+            trendingHashtags.includes(tag.toLowerCase())
+        );
+        
+        // Check for viral keywords
+        const viralKeywords = ['viral', 'trending', 'breaking', 'revolutionary', 'game changer'];
+        const hasViralKeywords = viralKeywords.some(keyword => 
+            content.caption.toLowerCase().includes(keyword)
+        );
+        
+        // Calculate trend score
+        const engagementRate = viewsNum > 0 ? likesNum / viewsNum : 0;
+        const isTrending = hasTrendingHashtag || hasViralKeywords || 
+                          engagementRate > 0.1 || viewsNum > 100000 || 
+                          Math.random() < 0.15;
+        
+        return isTrending;
     }
 
     updateBotActivity(platform) {

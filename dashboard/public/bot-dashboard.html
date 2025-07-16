@@ -14,39 +14,23 @@
     <div class="app">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="page-header">
-                    <div class="logo-container">
-                        <a href="/" class="logo-link">
-                            <img src="logo2.png" alt="WAVESITE" class="main-logo">
-                            <h1 class="brand-name">WAVESITE</h1>
-                        </a>
-                    </div>
-                    <div class="page-title-section">
-                        <h2>🏄‍♀️ Surfer Bot Dashboard</h2>
-                        <span class="tagline">Monitor and control your Surfer Bot sessions</span>
-                    </div>
+            <div class="header-container">
+                <div class="logo-section">
+                    <a href="/" class="logo-link">
+                        <img src="logo2.png" alt="WAVESITE" class="main-logo">
+                        <h1 class="brand-name">WAVESITE</h1>
+                    </a>
                 </div>
-                <div class="header-controls">
-                    <div class="global-status">
-                        <span class="status-label">System Status:</span>
-                        <span class="status-indicator" id="globalStatus">
-                            <span class="status-dot active"></span>
-                            <span class="status-text">Active</span>
-                        </span>
-                    </div>
-                    <button class="emergency-stop-btn" onclick="emergencyStop()">
-                        🛑 Emergency Stop All
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Navigation Menu -->
-            <nav class="main-navigation">
-                <div class="nav-container">
+                
+                <!-- Navigation Menu -->
+                <nav class="main-navigation">
                     <a href="/" class="nav-item">
                         <span class="nav-icon">📊</span>
                         <span class="nav-label">Dashboard</span>
+                    </a>
+                    <a href="/marketing-insights.html" class="nav-item">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Marketing Insights</span>
                     </a>
                     <a href="/bot-live-view.html" class="nav-item">
                         <span class="nav-icon">🏄‍♀️</span>
@@ -60,9 +44,28 @@
                         <span class="nav-icon">🤖</span>
                         <span class="nav-label">Bot Control</span>
                     </a>
+                </nav>
+                
+                <div class="header-actions">
+                    <div class="global-status">
+                        <span class="status-label">System Status:</span>
+                        <span class="status-indicator" id="globalStatus">
+                            <span class="status-dot active"></span>
+                            <span class="status-text">Active</span>
+                        </span>
+                    </div>
+                    <button class="emergency-stop-btn" onclick="emergencyStop()">
+                        🛑 Emergency Stop All
+                    </button>
                 </div>
-            </nav>
+            </div>
         </header>
+
+        <!-- Page Title Section (Below Header) -->
+        <section class="page-title-section">
+            <h2>🏄‍♀️ Surfer Bot Dashboard</h2>
+            <p class="page-description">Monitor and control your Surfer Bot sessions across platforms</p>
+        </section>
 
         <!-- Main Content -->
         <main class="main-content">
