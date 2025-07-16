@@ -361,6 +361,17 @@ class BotLiveViewer {
 
         console.log('🏄‍♀️ Starting Surfer Bot session...');
         
+        // Check if real bot client is available
+        if (window.botClient) {
+            console.log('🔗 Connecting to real bot backend...');
+            this.startRealBot();
+            return;
+        }
+        
+        // Fallback to simulation if backend not connected
+        console.log('⚠️ Backend not connected - using simulation mode');
+        this.addActivity('warning', '⚠️ Running in simulation mode - Start backend server for real data');
+        
         this.isRunning = true;
         this.sessionId = 'session_' + Date.now();
         this.startTime = Date.now();
@@ -416,6 +427,98 @@ class BotLiveViewer {
         setTimeout(() => {
             this.showSessionSummary();
         }, 1000);
+    }
+
+    async startRealBot() {
+        try {
+            this.isRunning = true;
+            this.startTime = Date.now();
+            this.activityCount = 0;
+            
+            // Get configuration
+            const platform = document.getElementById('platformSelect').value;
+            const profileType = document.getElementById('personaSelect').value;
+            const duration = parseInt(document.getElementById('durationSelect').value);
+            
+            // Update UI
+            this.updateStatus('running', 'Connecting to bot...');
+            this.showSessionProgress();
+            
+            // Connect to backend
+            window.botClient.connect();
+            
+            // Set up real-time callbacks
+            window.botClient.onContentDiscovered((data) => {
+                console.log('📱 Real content discovered:', data);
+                this.displayRealContent(data.content);
+                this.addActivityLog('📱', 'Real content viewed', `@${data.content.creator}: ${data.content.caption?.substring(0, 30)}...`);
+                this.activityCount++;
+            });
+            
+            window.botClient.onSessionComplete((data) => {
+                console.log('✅ Real session complete:', data);
+                this.stopBot();
+            });
+            
+            // Start the real bot
+            const result = await window.botClient.startBot(platform, profileType, duration);
+            this.sessionId = result.sessionId;
+            
+            this.updateStatus('running', '🔴 LIVE - Check browser window!');
+            this.addActivityLog('🚀', 'Real bot started', 'Chrome window opened - watch for real Instagram/TikTok scrolling');
+            
+        } catch (error) {
+            console.error('Failed to start real bot:', error);
+            this.addActivityLog('❌', 'Bot start failed', error.message);
+            this.updateStatus('offline', 'Bot start failed');
+            this.isRunning = false;
+        }
+    }
+
+    displayRealContent(content) {
+        const screenContent = document.getElementById('screenContent');
+        
+        // Update screen with real content
+        const contentHTML = `
+            <div class="real-content-view" style="padding: 20px; text-align: center; height: 100%;">
+                <div style="color: #00ff00; margin-bottom: 10px; font-weight: bold;">🔴 LIVE CONTENT</div>
+                <div class="content-header" style="margin-bottom: 15px;">
+                    <div class="creator-name" style="font-weight: bold; font-size: 18px;">@${content.creator}</div>
+                    ${content.creatorVerified ? '<span style="color: #1DA1F2;">✓ Verified</span>' : ''}
+                </div>
+                <div class="platform-badge" style="margin: 10px 0;">
+                    <span style="background: ${content.platform === 'tiktok' ? '#000' : '#E4405F'}; color: white; padding: 5px 10px; border-radius: 15px;">
+                        ${content.platform === 'tiktok' ? '🎵 TikTok' : '📱 Instagram'}
+                    </span>
+                </div>
+                <div class="content-caption" style="margin: 15px 0; font-size: 14px; max-height: 60px; overflow: hidden;">
+                    ${content.caption || 'No caption'}
+                </div>
+                <div class="content-metrics" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;">
+                    <div>❤️ ${this.formatNumber(content.likes)}</div>
+                    <div>💬 ${this.formatNumber(content.comments)}</div>
+                    <div>🔄 ${this.formatNumber(content.shares)}</div>
+                    <div>👁️ ${this.formatNumber(content.views)}</div>
+                </div>
+                ${content.hashtags && content.hashtags.length > 0 ? `
+                    <div style="margin-top: 15px; font-size: 12px;">
+                        ${content.hashtags.slice(0, 3).map(tag => `<span style="color: #1DA1F2; margin: 0 3px;">${tag}</span>`).join(' ')}
+                    </div>
+                ` : ''}
+                <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #888;">
+                    Data saved to Supabase ✓
+                </div>
+            </div>
+        `;
+        
+        screenContent.innerHTML = contentHTML;
+    }
+
+    formatNumber(num) {
+        if (!num || num === 0) return '0';
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
     }
 
     updateStatus(status, text) {
