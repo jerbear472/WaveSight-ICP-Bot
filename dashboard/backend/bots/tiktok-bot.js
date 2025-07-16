@@ -27,10 +27,12 @@ class TikTokBot {
     async start() {
         try {
             this.isRunning = true;
+            console.log('🚀 Starting TikTok Bot...');
             
             // Launch browser
+            console.log('🌍 Opening Chrome browser...');
             this.browser = await puppeteer.launch({
-                headless: false, // Set to true in production
+                headless: false, // Visible browser for data collection
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
@@ -38,13 +40,14 @@ class TikTokBot {
                     '--disable-accelerated-2d-canvas',
                     '--no-first-run',
                     '--no-zygote',
-                    '--disable-gpu'
+                    '--disable-gpu',
+                    '--disable-features=VizDisplayCompositor'
                 ]
             });
 
             this.page = await this.browser.newPage();
             
-            // Set viewport
+            // Set viewport for desktop TikTok
             await this.page.setViewport({ width: 1366, height: 768 });
             
             // Set user agent

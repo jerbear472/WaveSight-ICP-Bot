@@ -99,34 +99,77 @@ class InstagramBot {
     }
 
     async handlePopups() {
+        console.log('🔍 Checking for and closing popups...');
+        
         try {
+            // Wait a moment for popups to appear
+            await this.page.waitForTimeout(3000);
+            
             // Handle "Save Your Login Info?" popup
-            const saveLoginButton = await this.page.$x("//button[contains(text(), 'Not Now')]");
-            if (saveLoginButton.length > 0) {
-                await saveLoginButton[0].click();
-                await this.page.waitForTimeout(2000);
+            const saveLoginTexts = ['Not Now', 'Not now', 'Save Info', 'Turn On'];
+            for (const text of saveLoginTexts) {
+                const buttons = await this.page.$x(`//button[contains(text(), '${text}')]`);
+                if (buttons.length > 0) {
+                    console.log(`📱 Dismissing "${text}" popup`);
+                    await buttons[0].click();
+                    await this.page.waitForTimeout(2000);
+                    break;
+                }
             }
 
             // Handle "Turn on Notifications" popup
-            const notificationButton = await this.page.$x("//button[contains(text(), 'Not Now')]");
-            if (notificationButton.length > 0) {
-                await notificationButton[0].click();
+            const notificationButtons = await this.page.$x("//button[contains(text(), 'Not Now') or contains(text(), 'Turn On')]");
+            if (notificationButtons.length > 0) {
+                console.log('🔔 Dismissing notification popup');
+                await notificationButtons[0].click();
                 await this.page.waitForTimeout(2000);
             }
+
+            // Handle any close buttons (X)
+            const closeButtons = await this.page.$$('[aria-label="Close"], [aria-label="Dismiss"], button[aria-label*="close"]');
+            for (const button of closeButtons) {
+                try {
+                    await button.click();
+                    console.log('❌ Closed popup window');
+                    await this.page.waitForTimeout(1000);
+                } catch (e) {
+                    // Button might not be clickable
+                }
+            }
+
+            // Press Escape key to close any remaining modals
+            await this.page.keyboard.press('Escape');
+            await this.page.waitForTimeout(1000);
+            
+            console.log('✅ Popup handling complete');
+            
         } catch (error) {
-            console.log('No popups to handle');
+            console.log('⚠️ Popup handling completed with minor issues');
         }
     }
 
     async startBrowsing() {
+        console.log('🏄‍♀️ Starting Instagram content surfing...');
+        
         // Navigate to explore/reels for content discovery
+        console.log('📱 Navigating to Instagram Reels...');
         await this.page.goto('https://www.instagram.com/reels/', { waitUntil: 'networkidle2' });
         
+        // Handle any remaining popups after navigation
+        await this.handlePopups();
+        
+        // Make sure we're focused on the page
+        await this.page.bringToFront();
+        
         let scrollCount = 0;
-        const maxScrolls = 50; // Limit for session
+        const maxScrolls = 100; // Increased for better data collection
+        
+        console.log(`🎯 Starting content discovery session (max ${maxScrolls} reels)`);
         
         while (this.isRunning && scrollCount < maxScrolls) {
             try {
+                console.log(`📺 Processing reel ${scrollCount + 1}/${maxScrolls}`);
+                
                 // Get current reel data
                 const reelData = await this.extractReelData();
                 
@@ -134,6 +177,8 @@ class InstagramBot {
                     // Calculate dwell time
                     const dwellTime = this.calculateDwellTime(reelData);
                     reelData.dwellTime = Math.floor(dwellTime / 1000); // Convert to seconds
+                    
+                    console.log(`🎵 Found: @${reelData.creator} - ${reelData.music} (${dwellTime}ms view)`);
                     
                     // Save to database using data recorder
                     await this.dataRecorder.recordContentImpression(
@@ -158,24 +203,39 @@ class InstagramBot {
                     });
                     
                     // Simulate human-like viewing
+                    console.log(`⏱️ Watching for ${Math.floor(dwellTime/1000)}s...`);
                     await this.page.waitForTimeout(dwellTime);
                     
                     // Randomly engage based on profile
                     await this.maybeEngage(reelData);
+                } else {
+                    console.log('⚠️ Could not extract reel data, skipping...');
                 }
                 
                 // Scroll to next reel
+                console.log('⬇️ Scrolling to next reel...');
                 await this.page.keyboard.press('ArrowDown');
-                await this.page.waitForTimeout(1000 + Math.random() * 2000);
+                await this.page.waitForTimeout(2000 + Math.random() * 3000); // More human-like timing
                 
                 scrollCount++;
                 
+                // Emit periodic status updates
+                if (scrollCount % 10 === 0) {
+                    console.log(`📊 Progress: ${scrollCount} reels viewed, ${this.engagements} engagements`);
+                    this.socket.emit('bot-status', { 
+                        status: 'browsing', 
+                        progress: `${scrollCount}/${maxScrolls} reels viewed` 
+                    });
+                }
+                
             } catch (error) {
-                console.error('Error during browsing:', error);
+                console.error('❌ Error during browsing:', error);
                 // Continue browsing despite errors
+                await this.page.waitForTimeout(1000);
             }
         }
         
+        console.log('✅ Content discovery session complete');
         await this.endSession();
     }
 
