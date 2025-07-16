@@ -432,7 +432,7 @@ class TikTokBot extends BotBase {
   async scrollToNextVideo() {
     try {
       // Swipe up gesture for mobile
-      if (this.icpProfile.deviceType.includes('mobile')) {
+      if ((this.icpProfile.deviceType || 'desktop').includes('mobile')) {
         const viewportSize = this.page.viewportSize();
         const startY = viewportSize.height * 0.8;
         const endY = viewportSize.height * 0.2;
@@ -466,7 +466,7 @@ class TikTokBot extends BotBase {
       const likeButton = await this.page.$(this.selectors.likeButton);
       if (likeButton) {
         // Double tap for mobile-like behavior
-        if (this.icpProfile.deviceType.includes('mobile') && Math.random() < 0.5) {
+        if ((this.icpProfile.deviceType || 'desktop').includes('mobile') && Math.random() < 0.5) {
           const viewportSize = this.page.viewportSize();
           await this.page.mouse.dblclick(viewportSize.width / 2, viewportSize.height / 2);
         } else {

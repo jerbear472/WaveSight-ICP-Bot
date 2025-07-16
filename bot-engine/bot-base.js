@@ -9,6 +9,27 @@ const { v4: uuidv4 } = require('uuid');
 const UserAgent = require('user-agents');
 const EventEmitter = require('events');
 
+// Try to load environment config, fallback to defaults if not available
+let envConfig;
+try {
+  envConfig = require('../dashboard/backend/config/environment');
+} catch (e) {
+  // Default config if environment.js doesn't exist
+  envConfig = {
+    botConfig: {
+      headless: true,
+      browserArgs: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ],
+      viewport: { width: 1280, height: 720, deviceScaleFactor: 1 },
+      slowMo: 0
+    }
+  };
+}
+
 class BotBase extends EventEmitter {
   constructor(icpProfile, config = {}) {
     super();
@@ -65,16 +86,12 @@ class BotBase extends EventEmitter {
       });
 
       // Launch browser with anti-detection measures
-      // Force headless: false when credentials are provided for debugging
       const launchOptions = {
-        headless: this.config.credentials ? false : this.config.headless,
-        slowMo: this.config.slowMo,
+        headless: this.config.headless !== undefined ? this.config.headless : envConfig.botConfig.headless,
+        slowMo: this.config.slowMo || envConfig.botConfig.slowMo,
         args: [
-          '--disable-blink-features=AutomationControlled',
-          '--disable-features=IsolateOrigins,site-per-process',
-          '--disable-site-isolation-trials',
-          '--disable-web-security',
-          '--disable-features=BlockInsecurePrivateNetworkRequests'
+          ...envConfig.botConfig.browserArgs,
+          '--disable-blink-features=AutomationControlled'
         ]
       };
 
@@ -89,16 +106,19 @@ class BotBase extends EventEmitter {
       this.browser = await chromium.launch(launchOptions);
 
       // Create context with device emulation
-      const userAgentString = this.icpProfile.deviceType.includes('mobile')
+      const deviceType = this.icpProfile.deviceType || 'desktop';
+      const isMobile = deviceType.includes('mobile');
+      
+      const userAgentString = isMobile
         ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
         : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36';
 
       this.context = await this.browser.newContext({
         userAgent: userAgentString,
-        viewport: this.icpProfile.deviceInfo?.screenSize || { width: 1920, height: 1080 },
-        deviceScaleFactor: 2,
-        hasTouch: this.icpProfile.deviceType.includes('mobile'),
-        isMobile: this.icpProfile.deviceType.includes('mobile'),
+        viewport: this.config.viewport || this.icpProfile.deviceInfo?.screenSize || envConfig.botConfig.viewport,
+        deviceScaleFactor: isMobile ? 2 : 1,
+        hasTouch: isMobile,
+        isMobile: isMobile,
         locale: this.icpProfile.language || 'en-US',
         timezoneId: this.icpProfile.timezone || 'America/New_York',
         permissions: ['geolocation'],

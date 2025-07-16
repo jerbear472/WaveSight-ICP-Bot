@@ -11,6 +11,7 @@ const InstagramBot = require('./instagram-bot');
 const TikTokBot = require('./tiktok-bot');
 const DataLogger = require('../data-logger/supabase-logger');
 const EventEmitter = require('events');
+const envConfig = require('../dashboard/backend/config/environment');
 
 class BotOrchestrator extends EventEmitter {
   constructor(config = {}) {
@@ -212,12 +213,19 @@ class BotOrchestrator extends EventEmitter {
     try {
       let bot;
       
-      // Create appropriate bot instance
+      // Create appropriate bot instance with environment-aware config
       const botConfig = {
-        headless: false, // Show browser window
+        headless: envConfig.botConfig.headless,
         proxyUrl: this.getProxyUrl(),
-        credentials: session.credentials
+        credentials: session.credentials,
+        slowMo: envConfig.botConfig.slowMo,
+        viewport: envConfig.botConfig.viewport
       };
+      
+      this.logger.info('Creating bot with config', {
+        environment: envConfig.getEnvironmentInfo(),
+        headless: botConfig.headless
+      });
 
       switch (platform) {
         case 'instagram':
