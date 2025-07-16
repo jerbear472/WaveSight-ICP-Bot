@@ -376,18 +376,18 @@ class BotOrchestrator extends EventEmitter {
     // Remove from active bots
     this.activeBots.delete(sessionId);
 
-    // Schedule rest period before next session for this profile
-    const { session } = this.activeBots.get(sessionId) || {};
-    if (session) {
-      setTimeout(() => {
-        // Re-queue the profile for another session
-        this.sessionQueue.push({
-          ...session,
-          id: uuidv4(),
-          scheduledTime: new Date()
-        });
-      }, this.config.restPeriod);
-    }
+    // DISABLED: Auto re-queue - only run sessions when manually triggered
+    // const { session } = this.activeBots.get(sessionId) || {};
+    // if (session) {
+    //   setTimeout(() => {
+    //     // Re-queue the profile for another session
+    //     this.sessionQueue.push({
+    //       ...session,
+    //       id: uuidv4(),
+    //       scheduledTime: new Date()
+    //     });
+    //   }, this.config.restPeriod);
+    // }
   }
 
   /**
