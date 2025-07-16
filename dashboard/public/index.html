@@ -140,9 +140,9 @@
 
             <!-- Charts Section -->
             <section class="charts-section">
-                <div class="charts-grid">
+                <div class="engagement-timeline-container">
                     <!-- Engagement Timeline -->
-                    <div class="chart-card">
+                    <div class="chart-card full-width">
                         <div class="chart-header">
                             <div class="chart-title-section">
                                 <h3>Engagement Timeline</h3>
@@ -165,7 +165,12 @@
                             <canvas id="engagementChart"></canvas>
                         </div>
                     </div>
+                </div>
+            </section>
 
+            <!-- Platform Distribution & Bot Control Section -->
+            <section class="platform-bot-section">
+                <div class="platform-bot-grid">
                     <!-- Platform Distribution -->
                     <div class="chart-card">
                         <div class="chart-header">
@@ -193,6 +198,50 @@
                                     <span class="platform-percentage" id="instagramPercentage">32%</span>
                                     <span class="platform-count" id="instagramCount">4,000 posts</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bot Control -->
+                    <div class="bot-control-card">
+                        <div class="bot-control-header">
+                            <h3>🤖 Bot Control</h3>
+                            <div class="bot-status" id="botStatus">
+                                <span class="status-indicator"></span>
+                                <span class="status-text">Ready</span>
+                            </div>
+                        </div>
+                        <div class="bot-control-content">
+                            <div class="bot-controls">
+                                <div class="control-group">
+                                    <label for="profileType">ICP Profile:</label>
+                                    <select id="profileType">
+                                        <option value="gen_z_tech_enthusiast">👩‍💻 Tech Wave Rider (Gen Z)</option>
+                                        <option value="millennial_entrepreneur">🚀 Business Wave Rider (Millennial)</option>
+                                        <option value="crypto_investor">₿ Crypto Wave Rider</option>
+                                        <option value="mindfulness_seeker">🧘 Mindful Wave Rider</option>
+                                        <option value="fashion_beauty_enthusiast">💄 Fashion Wave Rider</option>
+                                        <option value="fitness_health_focused">💪 Fitness Wave Rider</option>
+                                        <option value="parent_family_oriented">👨‍👩‍👧 Family Wave Rider</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="platform">Platform:</label>
+                                    <select id="platform">
+                                        <option value="instagram">📱 Instagram (@mindmatterlife)</option>
+                                        <option value="tiktok">🎵 TikTok (@mindmatterlife)</option>
+                                    </select>
+                                </div>
+                                <div class="control-group">
+                                    <label for="duration">Duration:</label>
+                                    <select id="duration">
+                                        <option value="300000">5 minutes</option>
+                                        <option value="600000">10 minutes</option>
+                                        <option value="1800000">30 minutes</option>
+                                        <option value="3600000">1 hour</option>
+                                    </select>
+                                </div>
+                                <button class="start-bot-btn" onclick="startBot()">Start Bot Session</button>
                             </div>
                         </div>
                     </div>
@@ -325,51 +374,6 @@
                 </div>
             </section>
 
-            <!-- Bot Control Section -->
-            <section class="bot-control-section">
-                <div class="bot-control-card">
-                    <div class="bot-control-header">
-                        <h3>🤖 Bot Control</h3>
-                        <div class="bot-status" id="botStatus">
-                            <span class="status-indicator"></span>
-                            <span class="status-text">Ready</span>
-                        </div>
-                    </div>
-                    <div class="bot-control-content">
-                        <div class="bot-controls">
-                            <div class="control-group">
-                                <label for="profileType">ICP Profile:</label>
-                                <select id="profileType">
-                                    <option value="gen_z_tech_enthusiast">👩‍💻 Tech Wave Rider (Gen Z)</option>
-                                    <option value="millennial_entrepreneur">🚀 Business Wave Rider (Millennial)</option>
-                                    <option value="crypto_investor">₿ Crypto Wave Rider</option>
-                                    <option value="mindfulness_seeker">🧘 Mindful Wave Rider</option>
-                                    <option value="fashion_beauty_enthusiast">💄 Fashion Wave Rider</option>
-                                    <option value="fitness_health_focused">💪 Fitness Wave Rider</option>
-                                    <option value="parent_family_oriented">👨‍👩‍👧 Family Wave Rider</option>
-                                </select>
-                            </div>
-                            <div class="control-group">
-                                <label for="platform">Platform:</label>
-                                <select id="platform">
-                                    <option value="instagram">📱 Instagram (@mindmatterlife)</option>
-                                    <option value="tiktok">🎵 TikTok (@mindmatterlife)</option>
-                                </select>
-                            </div>
-                            <div class="control-group">
-                                <label for="duration">Duration:</label>
-                                <select id="duration">
-                                    <option value="300000">5 minutes</option>
-                                    <option value="600000">10 minutes</option>
-                                    <option value="1800000">30 minutes</option>
-                                    <option value="3600000">1 hour</option>
-                                </select>
-                            </div>
-                            <button class="start-bot-btn" onclick="startBot()">Start Bot Session</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
 
         <!-- Footer -->
