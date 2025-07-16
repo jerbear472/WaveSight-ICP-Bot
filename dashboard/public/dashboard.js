@@ -629,23 +629,41 @@ async function startBot() {
   statusText.textContent = 'Starting bot...';
   
   try {
-    const response = await fetch('/api/bot/start', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        profileType,
-        platform,
-        duration
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (response.ok) {
-      dashboard.showNotification('Bot session started successfully', 'success');
+    // Check if bot client is available
+    if (window.botClient) {
+      // Connect to backend
+      window.botClient.connect();
+      
+      // Set up callbacks
+      window.botClient.onContentDiscovered((data) => {
+        console.log('Content discovered:', data);
+        dashboard.showNotification(`Bot viewed: ${data.creator}`, 'info');
+      });
+      
+      window.botClient.onSessionComplete((data) => {
+        console.log('Session complete:', data);
+        dashboard.showNotification('Bot session completed', 'success');
+        
+        // Reset UI
+        statusIndicator.style.background = '#10b981';
+        statusText.textContent = 'Ready';
+        startButton.disabled = false;
+        startButton.textContent = 'Start Bot Session';
+      });
+      
+      // Start the bot
+      const result = await window.botClient.startBot(platform, profileType, duration);
+      console.log('Bot started:', result);
+      
+      dashboard.showNotification('Bot session started - Check the browser window!', 'success');
       statusText.textContent = 'Bot running...';
+      statusIndicator.style.background = '#10b981';
+      
+    } else {
+      // Fallback to mock behavior if bot client not loaded
+      console.warn('Bot client not loaded, using mock behavior');
+      dashboard.showNotification('Bot simulation started (backend not connected)', 'warning');
+      statusText.textContent = 'Bot simulating...';
       
       // Reset after duration
       setTimeout(() => {
@@ -654,10 +672,8 @@ async function startBot() {
         startButton.disabled = false;
         startButton.textContent = 'Start Bot Session';
       }, duration);
-      
-    } else {
-      throw new Error(result.error);
     }
+    
   } catch (error) {
     console.error('Failed to start bot:', error);
     dashboard.showNotification('Failed to start bot: ' + error.message, 'error');

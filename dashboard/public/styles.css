@@ -284,16 +284,18 @@ body {
 /* Hero Section */
 .hero-section {
   background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
-  padding: 3rem 2rem;
-  text-align: center;
+  padding: 2rem;
+  text-align: left;
   border-bottom: 1px solid var(--border-color);
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .hero-section .main-tagline {
   font-size: 2rem;
   font-weight: 700;
   color: var(--chrome-light);
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
   letter-spacing: 0.05em;
   background: var(--gradient-chrome-text);
   -webkit-background-clip: text;
@@ -305,7 +307,7 @@ body {
   font-size: 1.125rem;
   color: var(--text-secondary);
   font-weight: 500;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
 }
 
 .hero-section .description {
@@ -313,7 +315,7 @@ body {
   color: var(--text-muted);
   line-height: 1.6;
   max-width: 800px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 /* Main Content */

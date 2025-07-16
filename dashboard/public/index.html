@@ -138,36 +138,6 @@
                 </div>
             </section>
 
-            <!-- Charts Section -->
-            <section class="charts-section">
-                <div class="engagement-timeline-container">
-                    <!-- Engagement Timeline -->
-                    <div class="chart-card full-width">
-                        <div class="chart-header">
-                            <div class="chart-title-section">
-                                <h3>Engagement Timeline</h3>
-                                <p class="chart-description">Real-time visualization of content discovery and engagement patterns over time. Shows when your Surfer Bots found trending content and how engagement levels fluctuate during surfing sessions.</p>
-                            </div>
-                            <div class="chart-controls">
-                                <div class="time-range-selector">
-                                    <button class="time-btn active" data-range="1h">1H</button>
-                                    <button class="time-btn" data-range="6h">6H</button>
-                                    <button class="time-btn" data-range="24h">24H</button>
-                                    <button class="time-btn" data-range="7d">7D</button>
-                                </div>
-                                <div class="chart-type-controls">
-                                    <button class="chart-btn active" data-chart="impressions">Impressions</button>
-                                    <button class="chart-btn" data-chart="engagements">Engagements</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chart-content">
-                            <canvas id="engagementChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- Platform Distribution & Bot Control Section -->
             <section class="platform-bot-section">
                 <div class="platform-bot-grid">
@@ -243,6 +213,36 @@
                                 </div>
                                 <button class="start-bot-btn" onclick="startBot()">Start Bot Session</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="engagement-timeline-container">
+                    <!-- Engagement Timeline -->
+                    <div class="chart-card full-width">
+                        <div class="chart-header">
+                            <div class="chart-title-section">
+                                <h3>Engagement Timeline</h3>
+                                <p class="chart-description">Real-time visualization of content discovery and engagement patterns over time. Shows when your Surfer Bots found trending content and how engagement levels fluctuate during surfing sessions.</p>
+                            </div>
+                            <div class="chart-controls">
+                                <div class="time-range-selector">
+                                    <button class="time-btn active" data-range="1h">1H</button>
+                                    <button class="time-btn" data-range="6h">6H</button>
+                                    <button class="time-btn" data-range="24h">24H</button>
+                                    <button class="time-btn" data-range="7d">7D</button>
+                                </div>
+                                <div class="chart-type-controls">
+                                    <button class="chart-btn active" data-chart="impressions">Impressions</button>
+                                    <button class="chart-btn" data-chart="engagements">Engagements</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-content">
+                            <canvas id="engagementChart"></canvas>
                         </div>
                     </div>
                 </div>
