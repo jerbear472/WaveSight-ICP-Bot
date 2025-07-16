@@ -8,7 +8,6 @@ class BotClient {
         // Automatically detect backend URL based on environment
         this.backendUrl = this.getBackendUrl();
         this.currentSession = null;
-        this.dataService = new BotDataService();
         this.callbacks = {
             onStatusUpdate: null,
             onContentDiscovered: null,
