@@ -97,16 +97,18 @@ class ICPDashboard {
       }
     });
 
-    // Platform Distribution Chart
+    // Platform Distribution Chart (Pie Chart)
     const platformCtx = document.getElementById('platformChart').getContext('2d');
     this.charts.platform = new Chart(platformCtx, {
-      type: 'doughnut',
+      type: 'pie',
       data: {
-        labels: ['Instagram', 'TikTok'],
+        labels: ['TikTok', 'Instagram'],
         datasets: [{
-          data: [0, 0],
-          backgroundColor: ['#e11d48', '#000000'],
-          borderWidth: 0
+          data: [68, 32],
+          backgroundColor: ['#000000', '#E4405F'],
+          borderColor: ['#00d4ff', '#00d4ff'],
+          borderWidth: 2,
+          hoverOffset: 10
         }]
       },
       options: {

@@ -14,17 +14,17 @@
     <div class="app">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="brand-section">
+            <div class="header-top">
+                <div class="brand-wrapper">
                     <div class="logo-container">
                         <img src="logo2.png" alt="WAVESITE" class="main-logo">
                         <h1 class="brand-name">WAVESITE</h1>
                     </div>
-                    <div class="tagline-section">
-                        <p class="main-tagline">See What's Coming Before it Hits...</p>
-                        <p class="sub-tagline">Real-time trending analytics powered by Surfer Bot data</p>
-                        <p class="description">Track viral content, analyze sentiment patterns, and discover emerging trends across digital platforms with advanced AI-powered insights.</p>
-                    </div>
+                    <p class="main-tagline">See What's Coming Before it Hits...</p>
+                </div>
+                <div class="header-info">
+                    <p class="sub-tagline">Real-time trending analytics powered by Surfer Bot data</p>
+                    <p class="description">Track viral content, analyze sentiment patterns, and discover emerging trends across digital platforms with advanced AI-powered insights.</p>
                 </div>
                 <div class="header-controls">
                     <button class="refresh-btn" onclick="refreshData()">
@@ -40,18 +40,22 @@
                     <a href="/" class="nav-item active">
                         <span class="nav-icon">📊</span>
                         <span class="nav-label">Dashboard</span>
+                        <span class="nav-description">Overview & Analytics</span>
                     </a>
                     <a href="/bot-live-view.html" class="nav-item">
                         <span class="nav-icon">🏄‍♀️</span>
                         <span class="nav-label">Live Surfer Bot</span>
+                        <span class="nav-description">Real-time Activity</span>
                     </a>
                     <a href="/engagement-feed.html" class="nav-item">
                         <span class="nav-icon">🌊</span>
                         <span class="nav-label">Content Wave Feed</span>
+                        <span class="nav-description">Discovered Content</span>
                     </a>
                     <a href="/bot-dashboard.html" class="nav-item">
                         <span class="nav-icon">🤖</span>
                         <span class="nav-label">Bot Control</span>
+                        <span class="nav-description">Manage Sessions</span>
                     </a>
                 </div>
             </nav>
@@ -61,7 +65,13 @@
         <main class="main-content">
             <!-- Analytics Dashboard -->
             <section class="analytics-section">
-                <h2>📊 Real-Time Analytics</h2>
+                <div class="section-header">
+                    <h2>📊 Real-Time Analytics</h2>
+                    <div class="engagement-explanation">
+                        <h3>How is Engagement Calculated?</h3>
+                        <p>Engagement Score = (Likes × 1) + (Comments × 2) + (Shares × 3) + (Saves × 2.5) normalized by impressions. Higher weight on shares and saves indicates viral potential.</p>
+                    </div>
+                </div>
                 <div class="stats-grid">
                     <div class="stat-tile">
                         <div class="stat-icon">👁️</div>
