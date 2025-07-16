@@ -3,6 +3,9 @@
  * Frontend logic for the dashboard interface
  */
 
+// Global variable to track current bot session
+let currentBotSession = null;
+
 class ICPDashboard {
   constructor() {
     this.currentTimeRange = '24h';
@@ -651,6 +654,8 @@ async function startBot() {
   const platform = document.getElementById('platform').value;
   const duration = parseInt(document.getElementById('duration').value);
   
+  console.log('Starting bot with:', { platform, profileType, duration });
+  
   const startButton = document.querySelector('.start-bot-btn');
   const statusIndicator = document.querySelector('.status-indicator');
   const statusText = document.querySelector('.status-text');
@@ -717,14 +722,17 @@ async function startBot() {
       
       // Save session ID and update UI
       currentBotSession = result.sessionId;
-      dashboard.showNotification('🔴 REAL Bot session started - Check the Chrome browser window!', 'success');
-      statusText.textContent = 'Real Bot Running';
+      console.log('Bot started with session ID:', currentBotSession);
+      
+      dashboard.showNotification(`🔴 ${platform.toUpperCase()} Bot session started - Check the Chrome browser window!`, 'success');
+      statusText.textContent = `${platform} Bot Running`;
       statusIndicator.style.background = '#10b981';
       
       // Show stop button, hide start button
       const stopButton = document.querySelector('.stop-bot-btn');
       startButton.style.display = 'none';
       stopButton.style.display = 'block';
+      startButton.disabled = false; // Re-enable for next time
       
     } else {
       throw new Error('Bot client not loaded. Include bot-client.js script.');
@@ -739,13 +747,18 @@ async function startBot() {
     statusText.textContent = 'Backend Not Connected';
     startButton.disabled = false;
     startButton.textContent = 'Start Bot Session';
+    
+    // Make sure stop button is hidden on error
+    const stopButton = document.querySelector('.stop-bot-btn');
+    if (stopButton) {
+      stopButton.style.display = 'none';
+    }
   }
 }
 
-// Global variable to track current session
-let currentBotSession = null;
-
 async function stopBot() {
+  console.log('Stopping bot session:', currentBotSession);
+  
   const startButton = document.querySelector('.start-bot-btn');
   const stopButton = document.querySelector('.stop-bot-btn');
   const statusIndicator = document.querySelector('.status-indicator');
@@ -753,6 +766,7 @@ async function stopBot() {
   
   try {
     if (!currentBotSession) {
+      console.error('No active session to stop');
       dashboard.showNotification('No active bot session to stop', 'error');
       return;
     }
