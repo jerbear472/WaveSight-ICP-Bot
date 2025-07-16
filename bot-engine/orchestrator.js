@@ -211,19 +211,19 @@ class BotOrchestrator {
       let bot;
       
       // Create appropriate bot instance
+      const botConfig = {
+        headless: true,
+        proxyUrl: this.getProxyUrl(),
+        credentials: session.credentials
+      };
+
       switch (platform) {
         case 'instagram':
-          bot = new InstagramBot(profile, {
-            headless: true,
-            proxyUrl: this.getProxyUrl()
-          });
+          bot = new InstagramBot(profile, botConfig);
           break;
           
         case 'tiktok':
-          bot = new TikTokBot(profile, {
-            headless: true,
-            proxyUrl: this.getProxyUrl()
-          });
+          bot = new TikTokBot(profile, botConfig);
           break;
           
         default:
@@ -453,7 +453,8 @@ class BotOrchestrator {
     const {
       profileType = 'gen_z_tech_enthusiast',
       platform = 'instagram',
-      duration = this.config.sessionDuration
+      duration = this.config.sessionDuration,
+      credentials
     } = options;
 
     this.logger.info('Starting manual bot session', options);
@@ -467,7 +468,8 @@ class BotOrchestrator {
       profile,
       platform,
       scheduledTime: new Date(),
-      manual: true
+      manual: true,
+      credentials
     };
 
     // Run immediately

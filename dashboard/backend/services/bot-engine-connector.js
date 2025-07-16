@@ -60,11 +60,15 @@ class BotEngineConnector {
           status: 'running'
         });
 
-      // Start manual session through orchestrator
+      // Get credentials for the platform
+      const credentials = this.getCredentialsForPlatform(platform);
+
+      // Start manual session through orchestrator with credentials
       const orchestratorSessionId = await this.orchestrator.runManualSession({
         profileType,
         platform,
-        duration: duration || 300000
+        duration: duration || 300000,
+        credentials
       });
 
       // Track the session
@@ -221,6 +225,21 @@ class BotEngineConnector {
         elapsed: Date.now() - session.startTime
       }))
     };
+  }
+
+  getCredentialsForPlatform(platform) {
+    const credentials = {
+      instagram: {
+        username: process.env.INSTAGRAM_USERNAME || 'mindmatterlife',
+        password: process.env.INSTAGRAM_PASSWORD || 'L0ngStr@ngeTr!p'
+      },
+      tiktok: {
+        email: process.env.TIKTOK_EMAIL || 'mindmattermarket@gmail.com',
+        password: process.env.TIKTOK_PASSWORD || 'L0ngStr@ngeTr!p'
+      }
+    };
+
+    return credentials[platform] || null;
   }
 
   async cleanup() {

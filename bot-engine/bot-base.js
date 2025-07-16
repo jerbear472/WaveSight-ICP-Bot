@@ -63,8 +63,9 @@ class BotBase {
       });
 
       // Launch browser with anti-detection measures
+      // Force headless: false when credentials are provided for debugging
       const launchOptions = {
-        headless: this.config.headless,
+        headless: this.config.credentials ? false : this.config.headless,
         slowMo: this.config.slowMo,
         args: [
           '--disable-blink-features=AutomationControlled',

@@ -66,6 +66,12 @@ class InstagramBot extends BotBase {
         await this.sleep(1000);
       }
 
+      // Check if login is required
+      const usernameInput = await this.page.locator('input[name="username"]').count();
+      if (usernameInput > 0) {
+        await this.performLogin();
+      }
+
       // Wait for feed to load - try multiple selectors
       const feedSelectors = [
         'article[role="presentation"]',
@@ -87,11 +93,6 @@ class InstagramBot extends BotBase {
       }
       
       if (!feedFound) {
-        // Check if we're logged in at all
-        const usernameInput = await this.page.locator('input[name="username"]').count();
-        if (usernameInput > 0) {
-          throw new Error('Not logged in - username input found');
-        }
         this.logger.warn('No specific feed selectors found, but appears to be logged in');
       }
       
@@ -430,6 +431,86 @@ class InstagramBot extends BotBase {
     } catch (error) {
       this.logger.error('Error viewing stories', { error: error.message });
     }
+  }
+
+  /**
+   * Perform Instagram login
+   */
+  async performLogin() {
+    try {
+      const credentials = this.getCredentials();
+      if (!credentials || !credentials.username || !credentials.password) {
+        throw new Error('Instagram credentials not configured');
+      }
+
+      this.logger.info('Performing Instagram login', { username: credentials.username });
+
+      // Fill username
+      await this.page.fill('input[name="username"]', credentials.username);
+      await this.randomSleep(500, 1000);
+
+      // Fill password
+      await this.page.fill('input[name="password"]', credentials.password);
+      await this.randomSleep(500, 1000);
+
+      // Click login button
+      await this.page.click('button[type="submit"]');
+      
+      // Wait for navigation
+      await this.page.waitForLoadState('networkidle');
+      await this.randomSleep(2000, 3000);
+
+      // Handle "Save Your Login Info?" popup
+      try {
+        const saveInfoButton = await this.page.locator('button:has-text("Not Now")').first();
+        if (await saveInfoButton.isVisible({ timeout: 5000 })) {
+          await saveInfoButton.click();
+          await this.randomSleep(1000, 2000);
+        }
+      } catch (e) {
+        // Popup might not appear
+      }
+
+      // Handle "Turn on Notifications?" popup
+      try {
+        const notificationButton = await this.page.locator('button:has-text("Not Now")').first();
+        if (await notificationButton.isVisible({ timeout: 5000 })) {
+          await notificationButton.click();
+          await this.randomSleep(1000, 2000);
+        }
+      } catch (e) {
+        // Popup might not appear
+      }
+
+      this.logger.info('Instagram login successful');
+    } catch (error) {
+      this.logger.error('Instagram login failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get Instagram credentials from config or environment
+   */
+  getCredentials() {
+    // Check if credentials are in config
+    if (this.config.credentials && this.config.credentials.instagram) {
+      return this.config.credentials.instagram;
+    }
+
+    // Check environment variables
+    if (process.env.INSTAGRAM_USERNAME && process.env.INSTAGRAM_PASSWORD) {
+      return {
+        username: process.env.INSTAGRAM_USERNAME,
+        password: process.env.INSTAGRAM_PASSWORD
+      };
+    }
+
+    // Default credentials (from user's message)
+    return {
+      username: 'mindmatterlife',
+      password: 'L0ngStr@ngeTr!p'
+    };
   }
 
   /**

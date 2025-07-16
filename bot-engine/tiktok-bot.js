@@ -64,6 +64,12 @@ class TikTokBot extends BotBase {
       // Handle any popups or cookie consent
       await this.handleInitialPopups();
 
+      // Check if login is required
+      const loginButton = await this.page.locator('[data-e2e="navbar-login-button"], button:has-text("Log in")').count();
+      if (loginButton > 0) {
+        await this.performLogin();
+      }
+
       // Wait for video feed to load - try multiple selectors
       const feedSelectors = [
         'div[data-e2e="recommend-list-item-container"]',
@@ -87,12 +93,6 @@ class TikTokBot extends BotBase {
       }
       
       if (!feedFound) {
-        // Check if we're logged in at all
-        const loginButton = await this.page.locator('[data-e2e="login-button"]').count();
-        if (loginButton > 0) {
-          throw new Error('Not logged in - login button found');
-        }
-        
         // Check for profile icon (means logged in)
         const profileIcon = await this.page.locator('[data-e2e="profile-icon"]').count();
         if (profileIcon > 0) {
@@ -543,6 +543,88 @@ class TikTokBot extends BotBase {
     }
 
     return Math.min(baseProbability, 0.5); // Cap at 50%
+  }
+
+  /**
+   * Perform TikTok login
+   */
+  async performLogin() {
+    try {
+      const credentials = this.getCredentials();
+      if (!credentials || !credentials.email || !credentials.password) {
+        throw new Error('TikTok credentials not configured');
+      }
+
+      this.logger.info('Performing TikTok login', { email: credentials.email });
+
+      // Click login button
+      const loginButton = await this.page.locator('[data-e2e="navbar-login-button"], button:has-text("Log in")').first();
+      if (await loginButton.isVisible()) {
+        await loginButton.click();
+        await this.randomSleep(2000, 3000);
+      }
+
+      // Click "Use email/username" option
+      const emailOption = await this.page.locator('div[role="link"]:has-text("Use email / username"), a:has-text("Use phone / email / username")').first();
+      if (await emailOption.isVisible({ timeout: 5000 })) {
+        await emailOption.click();
+        await this.randomSleep(1000, 2000);
+      }
+
+      // Click "Log in with email or username" tab if needed
+      const emailTab = await this.page.locator('a:has-text("Email / Username"), a:has-text("Log in with email or username")').first();
+      if (await emailTab.isVisible({ timeout: 3000 })) {
+        await emailTab.click();
+        await this.randomSleep(500, 1000);
+      }
+
+      // Fill email
+      await this.page.fill('input[name="username"], input[type="text"]', credentials.email);
+      await this.randomSleep(500, 1000);
+
+      // Fill password
+      await this.page.fill('input[type="password"]', credentials.password);
+      await this.randomSleep(500, 1000);
+
+      // Click submit button
+      await this.page.click('button[type="submit"], button[data-e2e="login-button"]');
+      
+      // Wait for navigation
+      await this.page.waitForLoadState('networkidle');
+      await this.randomSleep(3000, 5000);
+
+      // Handle any post-login popups
+      await this.handleInitialPopups();
+
+      this.logger.info('TikTok login successful');
+    } catch (error) {
+      this.logger.error('TikTok login failed', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get TikTok credentials from config or environment
+   */
+  getCredentials() {
+    // Check if credentials are in config
+    if (this.config.credentials && this.config.credentials.tiktok) {
+      return this.config.credentials.tiktok;
+    }
+
+    // Check environment variables
+    if (process.env.TIKTOK_EMAIL && process.env.TIKTOK_PASSWORD) {
+      return {
+        email: process.env.TIKTOK_EMAIL,
+        password: process.env.TIKTOK_PASSWORD
+      };
+    }
+
+    // Default credentials (from user's message)
+    return {
+      email: 'mindmattermarket@gmail.com',
+      password: 'L0ngStr@ngeTr!p'
+    };
   }
 
   /**
