@@ -21,6 +21,7 @@ class ICPDashboard {
     this.initializeCharts();
     this.loadData();
     this.startAutoRefresh();
+    this.checkBackendConnection();
   }
 
   /**
@@ -439,8 +440,40 @@ class ICPDashboard {
     this.refreshInterval = setInterval(() => {
       if (!document.hidden) {
         this.loadData();
+        this.checkBackendConnection();
       }
     }, 30000); // Refresh every 30 seconds
+  }
+
+  /**
+   * Check backend connection status
+   */
+  async checkBackendConnection() {
+    const statusElement = document.getElementById('botStatus');
+    const statusText = statusElement?.querySelector('.status-text');
+    const statusIndicator = statusElement?.querySelector('.status-indicator');
+    
+    if (!statusElement || !statusText || !statusIndicator) return;
+
+    try {
+      // Test if backend is running
+      const response = await fetch('http://localhost:3001/api/health', {
+        method: 'GET',
+        timeout: 3000
+      });
+      
+      if (response.ok) {
+        statusText.textContent = 'Backend Connected';
+        statusIndicator.classList.remove('offline');
+        statusIndicator.classList.add('online');
+      } else {
+        throw new Error('Backend not responding');
+      }
+    } catch (error) {
+      statusText.textContent = 'Backend Not Connected';
+      statusIndicator.classList.remove('online');
+      statusIndicator.classList.add('offline');
+    }
   }
 
   /**
@@ -629,6 +662,16 @@ async function startBot() {
   statusText.textContent = 'Starting bot...';
   
   try {
+    // First check if backend is available
+    const healthCheck = await fetch('http://localhost:3001/api/health', {
+      method: 'GET',
+      timeout: 3000
+    });
+    
+    if (!healthCheck.ok) {
+      throw new Error('Backend server not running. Start with: cd backend && npm run dev');
+    }
+    
     // Check if bot client is available
     if (window.botClient) {
       // Connect to backend
@@ -637,7 +680,7 @@ async function startBot() {
       // Set up callbacks
       window.botClient.onContentDiscovered((data) => {
         console.log('Content discovered:', data);
-        dashboard.showNotification(`Bot viewed: ${data.creator}`, 'info');
+        dashboard.showNotification(`Bot viewed: ${data.content.creator}`, 'info');
       });
       
       window.botClient.onSessionComplete((data) => {
@@ -646,7 +689,18 @@ async function startBot() {
         
         // Reset UI
         statusIndicator.style.background = '#10b981';
-        statusText.textContent = 'Ready';
+        statusText.textContent = 'Backend Connected';
+        startButton.disabled = false;
+        startButton.textContent = 'Start Bot Session';
+      });
+      
+      window.botClient.onError((error) => {
+        console.error('Bot error:', error);
+        dashboard.showNotification('Bot error: ' + error, 'error');
+        
+        // Reset UI
+        statusIndicator.style.background = '#f59e0b';
+        statusText.textContent = 'Bot Error';
         startButton.disabled = false;
         startButton.textContent = 'Start Bot Session';
       });
@@ -655,32 +709,21 @@ async function startBot() {
       const result = await window.botClient.startBot(platform, profileType, duration);
       console.log('Bot started:', result);
       
-      dashboard.showNotification('Bot session started - Check the browser window!', 'success');
-      statusText.textContent = 'Bot running...';
+      dashboard.showNotification('🔴 REAL Bot session started - Check the Chrome browser window!', 'success');
+      statusText.textContent = 'Real Bot Running';
       statusIndicator.style.background = '#10b981';
       
     } else {
-      // Fallback to mock behavior if bot client not loaded
-      console.warn('Bot client not loaded, using mock behavior');
-      dashboard.showNotification('Bot simulation started (backend not connected)', 'warning');
-      statusText.textContent = 'Bot simulating...';
-      
-      // Reset after duration
-      setTimeout(() => {
-        statusIndicator.style.background = '#10b981';
-        statusText.textContent = 'Ready';
-        startButton.disabled = false;
-        startButton.textContent = 'Start Bot Session';
-      }, duration);
+      throw new Error('Bot client not loaded. Include bot-client.js script.');
     }
     
   } catch (error) {
     console.error('Failed to start bot:', error);
     dashboard.showNotification('Failed to start bot: ' + error.message, 'error');
     
-    // Reset UI
-    statusIndicator.style.background = '#10b981';
-    statusText.textContent = 'Ready';
+    // Reset UI with error status
+    statusIndicator.style.background = '#ef4444';
+    statusText.textContent = 'Backend Not Connected';
     startButton.disabled = false;
     startButton.textContent = 'Start Bot Session';
   }
