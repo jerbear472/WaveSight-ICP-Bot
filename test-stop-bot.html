@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bot Stop</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Bot Stop Test</h1>
+    <button onclick="startBot()">Start Instagram Bot</button>
+    <button onclick="stopBot()" disabled id="stopBtn">Stop Bot</button>
+    <div id="status"></div>
+    
+    <script>
+        const socket = io('http://localhost:3001');
+        const status = document.getElementById('status');
+        const stopBtn = document.getElementById('stopBtn');
+        let currentSessionId = null;
+        
+        socket.on('connect', () => {
+            status.innerHTML += '<p>✅ Connected to backend</p>';
+        });
+        
+        socket.on('bot-started', (data) => {
+            currentSessionId = data.sessionId;
+            status.innerHTML += '<p>🚀 Bot started: ' + data.sessionId + '</p>';
+            stopBtn.disabled = false;
+        });
+        
+        socket.on('bot-status', (data) => {
+            status.innerHTML += '<p>📊 Status: ' + data.status + ' - ' + data.message + '</p>';
+        });
+        
+        socket.on('bot-stopped', (data) => {
+            status.innerHTML += '<p>🛑 Bot stopped: ' + data.sessionId + '</p>';
+            stopBtn.disabled = true;
+            currentSessionId = null;
+        });
+        
+        socket.on('session-complete', (data) => {
+            status.innerHTML += '<p>✅ Session complete! Stats: ' + JSON.stringify(data.stats) + '</p>';
+            stopBtn.disabled = true;
+            currentSessionId = null;
+        });
+        
+        socket.on('bot-error', (data) => {
+            status.innerHTML += '<p>❌ Error: ' + data.error + '</p>';
+        });
+        
+        function startBot() {
+            status.innerHTML += '<p>Starting bot...</p>';
+            socket.emit('start-bot', {
+                platform: 'instagram',
+                profileType: 'gen_z_tech_enthusiast',
+                duration: 300000 // 5 minutes
+            });
+        }
+        
+        function stopBot() {
+            if (currentSessionId) {
+                status.innerHTML += '<p>Stopping bot...</p>';
+                socket.emit('stop-bot', {
+                    sessionId: currentSessionId
+                });
+            }
+        }
+    </script>
+</body>
+</html>

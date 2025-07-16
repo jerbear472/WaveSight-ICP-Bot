@@ -246,6 +246,25 @@ class BotEngineConnector {
 
       console.log(`🛑 Stopping bot-engine session: ${sessionId}`);
 
+      // Stop the actual bot if it exists
+      if (session.orchestratorSessionId && this.orchestrator) {
+        // Find and stop the bot in the orchestrator
+        const activeBots = this.orchestrator.activeBots || new Map();
+        for (const [botId, bot] of activeBots) {
+          if (bot.sessionId === session.orchestratorSessionId) {
+            console.log(`🤖 Stopping bot with ID: ${botId}`);
+            if (bot.isActive) {
+              bot.isActive = false; // Signal the bot to stop
+            }
+            if (bot.cleanup && typeof bot.cleanup === 'function') {
+              await bot.cleanup(); // Clean up the bot resources
+            }
+            activeBots.delete(botId);
+            break;
+          }
+        }
+      }
+
       // Update session in database
       await this.supabase
         .from('bot_sessions')

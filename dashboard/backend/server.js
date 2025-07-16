@@ -95,7 +95,15 @@ io.on('connection', (socket) => {
     const { sessionId } = data;
     
     try {
-      await sessionManager.stopSession(sessionId);
+      // First try to stop bot-engine session
+      if (sessionId && sessionId.startsWith('botengine_')) {
+        console.log(`🛑 Stopping bot-engine session: ${sessionId}`);
+        await botEngineConnector.stopSession(sessionId);
+      } else {
+        // Fallback to basic session manager
+        await sessionManager.stopSession(sessionId);
+      }
+      
       socket.emit('bot-stopped', { sessionId });
     } catch (error) {
       console.error('Error stopping bot:', error);

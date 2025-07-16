@@ -93,6 +93,13 @@ class BotClient {
                 this.callbacks.onError(data.error);
             }
         });
+
+        this.socket.on('bot-stopped', (data) => {
+            this.currentSession = null;
+            if (this.callbacks.onSessionComplete) {
+                this.callbacks.onSessionComplete(data);
+            }
+        });
     }
 
     disconnect() {
@@ -140,10 +147,37 @@ class BotClient {
     }
 
     stopBot(sessionId = null) {
-        if (!this.socket) return;
+        if (!this.socket) return Promise.reject('Not connected');
 
-        this.socket.emit('stop-bot', {
-            sessionId: sessionId || this.currentSession
+        return new Promise((resolve, reject) => {
+            const targetSessionId = sessionId || this.currentSession;
+            
+            this.socket.emit('stop-bot', {
+                sessionId: targetSessionId
+            });
+
+            // Set up one-time listeners for response
+            const handleStopped = (data) => {
+                this.socket.off('bot-stopped', handleStopped);
+                this.socket.off('bot-error', handleError);
+                resolve(data);
+            };
+
+            const handleError = (data) => {
+                this.socket.off('bot-stopped', handleStopped);
+                this.socket.off('bot-error', handleError);
+                reject(new Error(data.error));
+            };
+
+            this.socket.once('bot-stopped', handleStopped);
+            this.socket.once('bot-error', handleError);
+
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                this.socket.off('bot-stopped', handleStopped);
+                this.socket.off('bot-error', handleError);
+                resolve({ sessionId: targetSessionId }); // Resolve anyway after timeout
+            }, 5000);
         });
     }
 

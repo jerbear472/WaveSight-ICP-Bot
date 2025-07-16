@@ -47,7 +47,13 @@ class RealBotDashboard {
         // Connect to backend
         if (this.botClient) {
             this.botClient.connect();
-            this.setupBotClientCallbacks();
+            
+            // Give socket a moment to initialize
+            setTimeout(() => {
+                this.setupBotClientCallbacks();
+                // Update connection status immediately
+                this.updateConnectionStatus();
+            }, 100);
         } else {
             console.error('Bot client not found! Make sure bot-client.js is loaded');
             this.addActivityFeedItem('system', '❌ Bot client not loaded - check script includes', 'error');
@@ -168,6 +174,26 @@ class RealBotDashboard {
                 }
             });
         };
+        
+        // Listen for socket connection events  
+        if (this.botClient.socket) {
+            this.botClient.socket.on('connect', () => {
+                console.log('Socket connected!');
+                this.updateConnectionStatus();
+                this.addActivityFeedItem('system', '✅ Connected to backend', 'success');
+            });
+            
+            this.botClient.socket.on('disconnect', () => {
+                console.log('Socket disconnected!');
+                this.updateConnectionStatus();
+                this.addActivityFeedItem('system', '❌ Disconnected from backend', 'error');
+            });
+            
+            this.botClient.socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+                this.updateConnectionStatus();
+            });
+        }
     }
 
     async startBot(platform) {
@@ -515,6 +541,20 @@ class RealBotDashboard {
         a.download = filename;
         a.click();
         window.URL.revokeObjectURL(url);
+    }
+
+    updateConnectionStatus() {
+        // Check if socket is connected
+        const isConnected = this.botClient && this.botClient.socket && this.botClient.socket.connected;
+        const statusElement = document.querySelector('.connection-status');
+        
+        if (statusElement) {
+            if (isConnected) {
+                statusElement.innerHTML = '<span style="color: #4caf50;">✅ Backend connected</span>';
+            } else {
+                statusElement.innerHTML = '<span style="color: #f44336;">❌ Backend not connected</span>';
+            }
+        }
     }
 }
 
