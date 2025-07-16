@@ -6,6 +6,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 const isRender = process.env.RENDER === 'true' || process.env.IS_PULL_REQUEST === 'true';
 const isLocal = !isProduction && !isRender;
 
+// Force visible Chrome for debugging
+const forceVisible = process.env.FORCE_VISIBLE === 'true';
+
 module.exports = {
   // Environment detection
   isProduction,
@@ -15,7 +18,8 @@ module.exports = {
   // Bot configuration based on environment
   botConfig: {
     // Headless mode is REQUIRED on Render/cloud deployments
-    headless: !isLocal,
+    // But can be overridden for debugging
+    headless: forceVisible ? false : !isLocal,
     
     // Additional browser args for cloud compatibility
     browserArgs: [

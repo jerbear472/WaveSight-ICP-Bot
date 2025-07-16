@@ -14,8 +14,8 @@ class InstagramBot extends BotBase {
 
     this.baseUrl = 'https://www.instagram.com';
     this.selectors = {
-      // Feed selectors
-      feedPost: 'article[role="presentation"]',
+      // Feed selectors - Instagram may use different article structures
+      feedPost: 'article',
       postImage: 'article img[srcset]',
       postVideo: 'article video',
       postCaption: 'article span[dir="auto"]',
@@ -54,10 +54,14 @@ class InstagramBot extends BotBase {
    */
   async navigateToFeed() {
     try {
-      await this.page.goto(this.baseUrl, { 
+      // First check if we need to login by going directly to login page
+      const loginUrl = 'https://www.instagram.com/accounts/login/';
+      await this.page.goto(loginUrl, { 
         waitUntil: 'networkidle',
         timeout: 30000 
       });
+      
+      this.logger.info('Navigated to Instagram login page');
 
       // Handle cookie consent if present
       const cookieButton = await this.page.$('button:has-text("Allow essential and optional cookies")');
@@ -66,10 +70,22 @@ class InstagramBot extends BotBase {
         await this.sleep(1000);
       }
 
-      // Check if login is required
+      // Check if login form is present
       const usernameInput = await this.page.locator('input[name="username"]').count();
       if (usernameInput > 0) {
         await this.performLogin();
+        
+        // After login, wait a bit for session to establish
+        await this.sleep(2000);
+        
+        // After login, always navigate to home feed
+        this.logger.info('Navigating to home feed after login');
+        await this.page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' });
+        await this.sleep(3000);
+      } else {
+        // Already logged in
+        this.logger.info('Already logged in, navigating to feed');
+        await this.page.goto(this.baseUrl, { waitUntil: 'networkidle' });
       }
 
       // Wait for feed to load - try multiple selectors
@@ -127,12 +143,27 @@ class InstagramBot extends BotBase {
 
     while (Date.now() - startTime < duration && this.isActive) {
       try {
-        // Get visible posts
-        const posts = await this.page.$$(this.selectors.feedPost);
+        // Get visible posts - filter out non-feed articles
+        const allArticles = await this.page.$$('article');
+        const posts = [];
+        
+        // Filter to only get actual feed posts (not login prompts, etc)
+        for (const article of allArticles) {
+          // Check if this looks like a feed post (has time element or images)
+          const hasTime = await article.$('time') !== null;
+          const hasImage = await article.$('img[srcset], img[src*="instagram"]') !== null;
+          const hasVideo = await article.$('video') !== null;
+          
+          if (hasTime || hasImage || hasVideo) {
+            posts.push(article);
+          }
+        }
+        
+        this.logger.debug(`Found ${allArticles.length} articles, ${posts.length} are feed posts`);
         
         for (const post of posts) {
           // Check if post is in viewport
-          const isVisible = await post.isIntersectingViewport();
+          const isVisible = await post.isVisible();
           if (!isVisible) continue;
 
           // Extract post data
@@ -464,43 +495,70 @@ class InstagramBot extends BotBase {
 
       this.logger.info('Performing Instagram login', { username: credentials.username });
 
+      // Wait for login form to be visible
+      await this.page.waitForSelector('input[name="username"]', { timeout: 10000 });
+      
       // Fill username
       await this.page.fill('input[name="username"]', credentials.username);
-      await this.randomSleep(500, 1000);
+      await this.randomSleep(300, 500);
 
-      // Fill password
+      // Fill password  
       await this.page.fill('input[name="password"]', credentials.password);
-      await this.randomSleep(500, 1000);
-
-      // Click login button
-      await this.page.click('button[type="submit"]');
+      await this.randomSleep(300, 500);
       
-      // Wait for navigation
-      await this.page.waitForLoadState('networkidle');
-      await this.randomSleep(2000, 3000);
-
-      // Handle "Save Your Login Info?" popup
-      try {
-        const saveInfoButton = await this.page.locator('button:has-text("Not Now")').first();
-        if (await saveInfoButton.isVisible({ timeout: 5000 })) {
-          await saveInfoButton.click();
-          await this.randomSleep(1000, 2000);
+      // Wait a bit for form validation
+      await this.randomSleep(500, 1000);
+      
+      // Try to click the button multiple times until it works
+      let clicked = false;
+      for (let i = 0; i < 5; i++) {
+        try {
+          const loginButton = await this.page.$('button[type="submit"]');
+          if (loginButton) {
+            const isDisabled = await loginButton.getAttribute('disabled');
+            if (!isDisabled) {
+              await loginButton.click();
+              clicked = true;
+              break;
+            }
+          }
+          await this.sleep(500);
+        } catch (e) {
+          // Try again
         }
-      } catch (e) {
-        // Popup might not appear
       }
+      
+      if (!clicked) {
+        // Fallback: press Enter
+        this.logger.info('Button click failed, pressing Enter');
+        await this.page.keyboard.press('Enter');
+      }
+      
+      // Navigation and popup handling is done in the code above
 
-      // Handle "Turn on Notifications?" popup
-      try {
-        const notificationButton = await this.page.locator('button:has-text("Not Now")').first();
-        if (await notificationButton.isVisible({ timeout: 5000 })) {
-          await notificationButton.click();
-          await this.randomSleep(1000, 2000);
+      this.logger.info('Login form submitted, waiting for navigation');
+      
+      // Wait longer for Instagram to process login and redirect
+      await this.sleep(5000);
+      
+      // Check if we're on the onetap page
+      const afterLoginUrl = this.page.url();
+      this.logger.info(`After login URL: ${afterLoginUrl}`);
+      
+      if (afterLoginUrl.includes('onetap')) {
+        // Handle the "Save your login info?" page
+        this.logger.info('On onetap page, dismissing...');
+        try {
+          const notNowButton = await this.page.$('button:has-text("Not Now"), button:has-text("Not now")');
+          if (notNowButton) {
+            await notNowButton.click();
+            await this.sleep(2000);
+          }
+        } catch (e) {
+          this.logger.warn('Could not find Not Now button');
         }
-      } catch (e) {
-        // Popup might not appear
       }
-
+      
       this.logger.info('Instagram login successful');
       this.emit('status', { 
         status: 'logged_in',
@@ -520,7 +578,12 @@ class InstagramBot extends BotBase {
    * Get Instagram credentials from config or environment
    */
   getCredentials() {
-    // Check if credentials are in config
+    // Check if credentials are directly in config (from orchestrator)
+    if (this.config.credentials && this.config.credentials.username && this.config.credentials.password) {
+      return this.config.credentials;
+    }
+    
+    // Check if credentials are in config.instagram
     if (this.config.credentials && this.config.credentials.instagram) {
       return this.config.credentials.instagram;
     }
