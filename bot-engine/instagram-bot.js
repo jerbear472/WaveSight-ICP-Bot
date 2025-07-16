@@ -306,6 +306,82 @@ class InstagramBot extends BotBase {
   }
 
   /**
+   * Check for captcha and alert if found
+   */
+  async checkForCaptcha() {
+    try {
+      // Common captcha selectors
+      const captchaSelectors = [
+        'iframe[src*="recaptcha"]',
+        'div[class*="recaptcha"]',
+        '#recaptcha',
+        'div[class*="captcha"]',
+        'div[class*="challenge"]',
+        'div[aria-label*="verify"]',
+        'div[aria-label*="captcha"]'
+      ];
+      
+      for (const selector of captchaSelectors) {
+        const captchaElement = await this.page.$(selector);
+        if (captchaElement) {
+          this.logger.warn('CAPTCHA detected!');
+          this.emit('status', {
+            status: 'captcha_detected',
+            message: 'CAPTCHA verification required'
+          });
+          
+          // Wait for user to solve captcha (up to 2 minutes)
+          this.logger.info('Waiting for user to solve captcha...');
+          
+          // Check every 2 seconds if captcha is gone
+          let captchaSolved = false;
+          const maxWaitTime = 120000; // 2 minutes
+          const checkInterval = 2000; // 2 seconds
+          const startTime = Date.now();
+          
+          while (!captchaSolved && (Date.now() - startTime) < maxWaitTime) {
+            await this.sleep(checkInterval);
+            const stillHasCaptcha = await this.page.$(selector);
+            if (!stillHasCaptcha) {
+              captchaSolved = true;
+              this.logger.info('Captcha appears to be solved!');
+              this.emit('status', {
+                status: 'captcha_solved',
+                message: 'Captcha solved, continuing...'
+              });
+            }
+          }
+          
+          if (!captchaSolved) {
+            throw new Error('Captcha was not solved within timeout period');
+          }
+          
+          break;
+        }
+      }
+      
+      // Also check for Instagram's specific challenge
+      const challengeElement = await this.page.$('button:has-text("Confirm")');
+      if (challengeElement) {
+        const pageText = await this.page.textContent('body');
+        if (pageText && (pageText.includes('suspicious') || pageText.includes('verify') || pageText.includes('challenge'))) {
+          this.logger.warn('Instagram security challenge detected!');
+          this.emit('status', {
+            status: 'captcha_detected',
+            message: 'Instagram security verification required'
+          });
+          
+          // Wait for user to complete challenge
+          await this.page.waitForNavigation({ timeout: 120000 });
+        }
+      }
+      
+    } catch (error) {
+      this.logger.error('Error checking for captcha:', error);
+    }
+  }
+
+  /**
    * Extract unique content ID from post
    */
   async extractContentId(postElement) {
@@ -558,8 +634,14 @@ class InstagramBot extends BotBase {
 
       this.logger.info('Login form submitted, waiting for navigation');
       
+      // Check for captcha
+      await this.checkForCaptcha();
+      
       // Wait longer for Instagram to process login and redirect
       await this.sleep(5000);
+      
+      // Check for captcha after login attempt
+      await this.checkForCaptcha();
       
       // Check if we're on the onetap page
       const afterLoginUrl = this.page.url();

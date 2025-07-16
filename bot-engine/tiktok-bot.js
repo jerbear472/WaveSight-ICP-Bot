@@ -611,6 +611,9 @@ class TikTokBot extends BotBase {
       // Wait for navigation
       await this.page.waitForLoadState('networkidle');
       await this.randomSleep(3000, 5000);
+      
+      // Check for captcha
+      await this.checkForCaptcha();
 
       // Handle any post-login popups
       await this.handleInitialPopups();
@@ -652,6 +655,67 @@ class TikTokBot extends BotBase {
       email: 'mindmattermarket@gmail.com',
       password: 'L0ngStr@ngeTr!p'
     };
+  }
+
+  /**
+   * Check for captcha and alert if found
+   */
+  async checkForCaptcha() {
+    try {
+      // Common captcha selectors including TikTok-specific ones
+      const captchaSelectors = [
+        'iframe[src*="recaptcha"]',
+        'div[class*="recaptcha"]',
+        '#recaptcha',
+        'div[class*="captcha"]',
+        'div[class*="verify"]',
+        'div[class*="puzzle"]',
+        'div[class*="slide-verify"]',
+        'div[class*="secsdk-captcha"]', // TikTok specific
+        'div[class*="captcha-verify-container"]' // TikTok specific
+      ];
+      
+      for (const selector of captchaSelectors) {
+        const captchaElement = await this.page.$(selector);
+        if (captchaElement) {
+          this.logger.warn('CAPTCHA detected on TikTok!');
+          this.emit('status', {
+            status: 'captcha_detected',
+            message: 'CAPTCHA verification required'
+          });
+          
+          // Wait for user to solve captcha (up to 2 minutes)
+          this.logger.info('Waiting for user to solve captcha...');
+          
+          let captchaSolved = false;
+          const maxWaitTime = 120000; // 2 minutes
+          const checkInterval = 2000; // 2 seconds
+          const startTime = Date.now();
+          
+          while (!captchaSolved && (Date.now() - startTime) < maxWaitTime) {
+            await this.sleep(checkInterval);
+            const stillHasCaptcha = await this.page.$(selector);
+            if (!stillHasCaptcha) {
+              captchaSolved = true;
+              this.logger.info('Captcha appears to be solved!');
+              this.emit('status', {
+                status: 'captcha_solved',
+                message: 'Captcha solved, continuing...'
+              });
+            }
+          }
+          
+          if (!captchaSolved) {
+            throw new Error('Captcha was not solved within timeout period');
+          }
+          
+          break;
+        }
+      }
+      
+    } catch (error) {
+      this.logger.error('Error checking for captcha:', error);
+    }
   }
 
   /**

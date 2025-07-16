@@ -141,9 +141,25 @@ class BotEngineConnector {
     const statusHandler = (data) => {
       if (data.sessionId !== session.orchestratorSessionId) return;
       
-      socket.emit('bot-status-update', {
+      // Map internal status to client expected format
+      const statusMap = {
+        'starting': 'started',
+        'navigating': 'started',
+        'logged_in': 'logged_in',
+        'feed_loaded': 'scrolling',
+        'scrolling': 'scrolling',
+        'captcha_detected': 'captcha_detected',
+        'captcha_solved': 'scrolling',
+        'session_complete': 'complete'
+      };
+      
+      const clientStatus = statusMap[data.status] || data.status;
+      
+      socket.emit('bot-status', {
         sessionId,
-        ...data
+        status: clientStatus,
+        message: data.message,
+        platform: session.platform
       });
     };
 
