@@ -79,15 +79,10 @@ body {
   gap: 0.75rem;
 }
 
-.wave-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
+.main-logo {
   height: 40px;
-  border-radius: 8px;
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.2);
+  width: auto;
+  object-fit: contain;
 }
 
 .brand-name {

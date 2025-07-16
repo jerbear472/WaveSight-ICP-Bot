@@ -63,10 +63,10 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem;
-  display: grid;
-  grid-template-columns: 1fr auto auto;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 3rem;
+  gap: 2rem;
 }
 
 /* Brand Section */
@@ -82,16 +82,10 @@ body {
   gap: 1rem;
 }
 
-.wave-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
+.main-logo {
   height: 50px;
-  border-radius: 12px;
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+  width: auto;
+  object-fit: contain;
 }
 
 .brand-name {
@@ -134,39 +128,7 @@ body {
   margin: 0;
 }
 
-/* Navigation */
-.main-nav {
-  display: flex;
-  gap: 0.5rem;
-  background: rgba(20, 24, 33, 0.8);
-  padding: 0.5rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(10px);
-}
-
-.nav-item {
-  padding: 0.75rem 1.25rem;
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.nav-item:hover {
-  background: rgba(0, 212, 255, 0.1);
-  color: var(--primary-color);
-  transform: translateY(-1px);
-}
-
-.nav-item.active {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
-}
+/* Header Controls */
 
 .header-controls {
   display: flex;
@@ -898,18 +860,13 @@ tr:hover {
 /* Responsive Design */
 @media (max-width: 1200px) {
   .header-content {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 2rem;
     text-align: center;
   }
   
   .brand-name {
     font-size: 2rem;
-  }
-  
-  .main-nav {
-    justify-content: center;
-    flex-wrap: wrap;
   }
 }
 
@@ -919,7 +876,7 @@ tr:hover {
   }
   
   .header-content {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 1.5rem;
     padding: 0 1rem;
   }
@@ -932,14 +889,10 @@ tr:hover {
     font-size: 1.25rem;
   }
   
-  .main-nav {
-    flex-direction: column;
-    gap: 0.25rem;
+  .main-logo {
+    height: 40px;
   }
-  
-  .nav-item {
-    text-align: center;
-  }
+}
 
   .main-content {
     padding: 1rem;
