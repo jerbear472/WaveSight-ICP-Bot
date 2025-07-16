@@ -24,30 +24,26 @@
   margin: 0;
 }
 
-/* Navigation Menu */
+/* Navigation Menu - Override to match standard horizontal layout */
 .main-navigation {
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid var(--border-color);
-  backdrop-filter: blur(10px);
-}
-
-.nav-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
   display: flex;
-  justify-content: center;
   gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   text-decoration: none;
   color: var(--text-secondary);
   border-radius: 0.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s ease;
   font-weight: 500;
   font-size: 0.875rem;
@@ -86,133 +82,9 @@
   white-space: nowrap;
 }
 
-/* WaveSight Theme Variables */
-:root {
-  --primary-color: #00d4ff;
-  --secondary-color: #0099cc;
-  --background-dark: #0a0d12;
-  --surface-dark: #1a1e2e;
-  --surface-light: #252a3d;
-  --text-primary: #ffffff;
-  --text-secondary: #a8b2d1;
-  --text-muted: #6b7280;
-  --success-color: #00ff88;
-  --warning-color: #ffaa00;
-  --error-color: #ff4444;
-  --border-color: #2d3748;
-  --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-  --gradient-dark: linear-gradient(135deg, #1a1e2e 0%, #252a3d 100%);
-  --glow-primary: 0 0 20px rgba(0, 212, 255, 0.3);
-  --glow-success: 0 0 20px rgba(0, 255, 136, 0.3);
-}
+/* Base styles come from main styles.css - Live View specific styles below */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--background-dark);
-  color: var(--text-primary);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-
-/* Dashboard Layout */
-.dashboard-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Header */
-.dashboard-header {
-  background: rgba(10, 13, 18, 0.95);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(20px);
-  padding: 1rem 0;
-}
-
-.header-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.logo-link {
-  text-decoration: none;
-  color: inherit;
-}
-
-.logo-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.main-logo {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
-}
-
-.brand-name {
-  font-family: 'Orbitron', monospace;
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
-  letter-spacing: 0.1em;
-  transition: all 0.2s ease;
-}
-
-.logo-link:hover .brand-name {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
-}
-
-.page-info h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 0.25rem 0;
-}
-
-.subtitle {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+/* Header styles inherited from main styles.css */
 
 /* Status Indicator */
 .status-indicator {
