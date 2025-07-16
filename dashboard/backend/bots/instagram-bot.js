@@ -28,6 +28,9 @@ class InstagramBot {
         try {
             this.isRunning = true;
             
+            // Create bot session in database first
+            await this.createSession();
+            
             // Launch browser
             this.browser = await puppeteer.launch({
                 headless: false, // Set to true in production
@@ -65,6 +68,28 @@ class InstagramBot {
             console.error('Instagram bot error:', error);
             this.socket.emit('bot-error', { error: error.message });
             await this.cleanup();
+        }
+    }
+
+    async createSession() {
+        try {
+            const { error } = await this.supabase
+                .from('bot_sessions')
+                .insert({
+                    session_id: this.session.session_id || this.session.id,
+                    platform: this.session.platform,
+                    profile_type: this.session.profileType,
+                    duration_ms: this.session.duration,
+                    status: 'running'
+                });
+            
+            if (error) {
+                console.error('Error creating session:', error);
+            } else {
+                console.log('✅ Bot session created in database');
+            }
+        } catch (error) {
+            console.error('Error creating bot session:', error);
         }
     }
 

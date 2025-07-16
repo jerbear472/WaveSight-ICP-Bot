@@ -14,6 +14,7 @@ const { createClient } = require('@supabase/supabase-js');
 const InstagramBot = require('./bots/instagram-bot');
 const TikTokBot = require('./bots/tiktok-bot');
 const BotSessionManager = require('./services/bot-session-manager');
+const BotEngineConnector = require('./services/bot-engine-connector');
 
 // Initialize Express app
 const app = express();
@@ -38,6 +39,9 @@ const supabase = createClient(
 // Bot session manager
 const sessionManager = new BotSessionManager(supabase, io);
 
+// Bot engine connector (advanced system)
+const botEngineConnector = new BotEngineConnector(supabase, io);
+
 // Socket.io connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
@@ -46,29 +50,44 @@ io.on('connection', (socket) => {
     const { platform, profileType, duration } = data;
     
     try {
-      // Create bot session
-      const session = await sessionManager.createSession({
+      console.log(`🚀 Starting bot via advanced bot-engine: ${platform} - ${profileType}`);
+      
+      // Use advanced bot-engine system
+      const sessionId = await botEngineConnector.startSession({
         platform,
         profileType,
-        duration,
-        socketId: socket.id
-      });
-
-      // Start appropriate bot
-      let bot;
-      if (platform === 'instagram') {
-        bot = new InstagramBot(session, supabase, socket);
-      } else if (platform === 'tiktok') {
-        bot = new TikTokBot(session, supabase, socket);
-      }
-
-      // Start bot session
-      await bot.start();
+        duration
+      }, socket);
       
-      socket.emit('bot-started', { sessionId: session.id });
+      console.log(`✅ Bot-engine session started: ${sessionId}`);
+      
     } catch (error) {
-      console.error('Error starting bot:', error);
-      socket.emit('bot-error', { error: error.message });
+      console.error('❌ Error starting bot-engine session:', error);
+      
+      // Fallback to basic bot system
+      console.log('🔄 Falling back to basic bot system...');
+      try {
+        const session = await sessionManager.createSession({
+          platform,
+          profileType,
+          duration,
+          socketId: socket.id
+        });
+
+        let bot;
+        if (platform === 'instagram') {
+          bot = new InstagramBot(session, supabase, socket);
+        } else if (platform === 'tiktok') {
+          bot = new TikTokBot(session, supabase, socket);
+        }
+
+        await bot.start();
+        socket.emit('bot-started', { sessionId: session.id });
+        
+      } catch (fallbackError) {
+        console.error('❌ Fallback bot system also failed:', fallbackError);
+        socket.emit('bot-error', { error: fallbackError.message });
+      }
     }
   });
 
@@ -220,8 +239,22 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
+// Initialize bot engine connector
+async function initializeServices() {
+  try {
+    console.log('🔧 Initializing advanced bot-engine...');
+    await botEngineConnector.initialize();
+    console.log('✅ Bot-engine initialized successfully');
+  } catch (error) {
+    console.error('⚠️ Bot-engine initialization failed, using basic bots only:', error);
+  }
+}
+
 // Start server
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`WaveSight Bot Backend running on port ${PORT}`);
+  
+  // Initialize services
+  await initializeServices();
 });
