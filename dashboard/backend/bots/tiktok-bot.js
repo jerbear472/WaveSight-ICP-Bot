@@ -6,18 +6,22 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
+const DataRecorder = require('../services/data-recorder');
 
 class TikTokBot {
     constructor(session, supabase, socket) {
         this.session = session;
         this.supabase = supabase;
         this.socket = socket;
+        this.dataRecorder = new DataRecorder(supabase);
         this.browser = null;
         this.page = null;
         this.isRunning = false;
         this.contentViewed = 0;
         this.engagements = 0;
         this.trendsFound = 0;
+        this.currentContentId = null;
+        this.currentContent = null;
     }
 
     async start() {
@@ -77,12 +81,24 @@ class TikTokBot {
                 const videoData = await this.extractVideoData();
                 
                 if (videoData) {
-                    // Save to database
-                    await this.saveContent(videoData);
+                    // Calculate watch time
+                    const watchTime = this.calculateWatchTime(videoData);
+                    videoData.dwellTime = Math.floor(watchTime / 1000); // Convert to seconds
+                    
+                    // Save to database using data recorder
+                    await this.dataRecorder.recordContentImpression(
+                        this.session.session_id || this.session.id,
+                        videoData
+                    );
+                    
+                    // Store current content reference
+                    this.currentContent = videoData;
+                    this.currentContentId = videoData.contentId;
+                    this.contentViewed++;
                     
                     // Emit progress
                     this.socket.emit('content-discovered', {
-                        sessionId: this.session.id,
+                        sessionId: this.session.session_id || this.session.id,
                         content: videoData,
                         stats: {
                             contentViewed: this.contentViewed,
@@ -91,8 +107,7 @@ class TikTokBot {
                         }
                     });
                     
-                    // Simulate human-like watch time
-                    const watchTime = this.calculateWatchTime(videoData);
+                    // Simulate human-like watching
                     await this.page.waitForTimeout(watchTime);
                     
                     // Randomly engage based on profile
@@ -126,22 +141,53 @@ class TikTokBot {
                                      video.closest('[class*="video-feed-item"]');
                 if (!videoContainer) return null;
                 
-                // Extract creator
-                const getCreator = () => {
+                // Extract creator info
+                const getCreatorInfo = () => {
                     const creatorLink = videoContainer.querySelector('a[href*="/@"]');
+                    const profilePic = videoContainer.querySelector('img[class*="Avatar"]');
+                    const verifiedBadge = videoContainer.querySelector('[data-e2e="verified-badge"]');
+                    
+                    let username = 'unknown';
+                    let displayName = '';
+                    
                     if (creatorLink) {
                         const href = creatorLink.getAttribute('href');
                         const match = href.match(/@([^/?]+)/);
-                        return match ? match[1] : 'unknown';
+                        username = match ? match[1] : 'unknown';
+                        
+                        // Try to get display name
+                        const nameElement = creatorLink.querySelector('span') || creatorLink;
+                        displayName = nameElement.innerText || username;
                     }
-                    return 'unknown';
+                    
+                    return {
+                        username: username,
+                        displayName: displayName,
+                        profilePicUrl: profilePic ? profilePic.src : null,
+                        isVerified: !!verifiedBadge
+                    };
                 };
                 
-                // Extract caption
+                const creator = getCreatorInfo();
+                
+                // Extract caption and hashtags
                 const getCaption = () => {
                     const captionElement = videoContainer.querySelector('[class*="DivContainer"] span') ||
                                          videoContainer.querySelector('[data-e2e="browse-video-desc"]');
                     return captionElement ? captionElement.innerText : '';
+                };
+                
+                const caption = getCaption();
+                const hashtagRegex = /#[a-zA-Z0-9_]+/g;
+                const mentionRegex = /@[a-zA-Z0-9_]+/g;
+                const hashtags = caption.match(hashtagRegex) || [];
+                const mentions = caption.match(mentionRegex) || [];
+                
+                // Extract music/sound
+                const getMusicInfo = () => {
+                    const musicElement = videoContainer.querySelector('[class*="music"]') ||
+                                       videoContainer.querySelector('a[href*="/music/"]');
+                    return musicElement ? musicElement.innerText : null;
                 };
                 
                 // Extract metrics
@@ -154,60 +200,68 @@ class TikTokBot {
                     return Math.floor(num);
                 };
                 
-                const getLikes = () => {
+                const getMetrics = () => {
+                    const metrics = {
+                        likes: 0,
+                        comments: 0,
+                        shares: 0,
+                        saves: 0,
+                        views: 0
+                    };
+                    
+                    // Likes
                     const likeButton = videoContainer.querySelector('[data-e2e="like-icon"]');
                     if (likeButton) {
                         const span = likeButton.nextElementSibling;
-                        return getMetricValue(span);
+                        metrics.likes = getMetricValue(span);
                     }
-                    return 0;
-                };
-                
-                const getComments = () => {
+                    
+                    // Comments
                     const commentButton = videoContainer.querySelector('[data-e2e="comment-icon"]');
                     if (commentButton) {
                         const span = commentButton.nextElementSibling;
-                        return getMetricValue(span);
+                        metrics.comments = getMetricValue(span);
                     }
-                    return 0;
-                };
-                
-                const getShares = () => {
+                    
+                    // Shares
                     const shareButton = videoContainer.querySelector('[data-e2e="share-icon"]');
                     if (shareButton) {
                         const span = shareButton.nextElementSibling;
-                        return getMetricValue(span);
+                        metrics.shares = getMetricValue(span);
                     }
-                    return 0;
+                    
+                    // Views - usually shown near the bottom
+                    const viewsElement = videoContainer.querySelector('[class*="views"]') ||
+                                       videoContainer.querySelector('strong:contains("views")');
+                    if (viewsElement) {
+                        metrics.views = getMetricValue(viewsElement);
+                    }
+                    
+                    return metrics;
                 };
                 
-                // Extract audio/music info
-                const getAudioInfo = () => {
-                    const audioLink = videoContainer.querySelector('a[href*="/music/"]');
-                    if (audioLink) {
-                        return {
-                            name: audioLink.innerText,
-                            id: audioLink.href.split('/music/')[1]?.split('?')[0]
-                        };
-                    }
-                    return null;
-                };
-                
-                const caption = getCaption();
-                const hashtagRegex = /#[a-zA-Z0-9_]+/g;
-                const hashtags = caption.match(hashtagRegex) || [];
+                const metrics = getMetrics();
+                const music = getMusicInfo();
                 
                 return {
                     platform: 'tiktok',
                     contentType: 'video',
-                    creator: getCreator(),
+                    contentId: `tiktok_${Date.now()}`,
+                    creator: creator.username,
+                    creatorDisplayName: creator.displayName,
+                    creatorProfilePic: creator.profilePicUrl,
+                    creatorVerified: creator.isVerified,
                     caption: caption,
                     hashtags: hashtags,
+                    mentions: mentions,
+                    music: music,
                     url: window.location.href,
-                    likes: getLikes(),
-                    comments: getComments(),
-                    shares: getShares(),
-                    audio: getAudioInfo(),
+                    thumbnailUrl: video.poster || '',
+                    likes: metrics.likes,
+                    comments: metrics.comments,
+                    shares: metrics.shares,
+                    saves: metrics.saves,
+                    views: metrics.views,
                     timestamp: new Date().toISOString()
                 };
             });
@@ -272,6 +326,17 @@ class TikTokBot {
             if (likeButton) {
                 await likeButton.click();
                 await this.page.waitForTimeout(500 + Math.random() * 1000);
+                
+                // Record engagement
+                if (this.currentContent) {
+                    await this.dataRecorder.recordEngagement(
+                        this.session.session_id || this.session.id,
+                        this.currentContentId,
+                        'like',
+                        this.currentContent.creator
+                    );
+                    this.engagements++;
+                }
             }
         } catch (error) {
             console.error('Error liking content:', error);

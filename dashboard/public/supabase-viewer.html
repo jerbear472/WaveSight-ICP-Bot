@@ -228,10 +228,14 @@
                 <div class="control-group">
                     <label>Table:</label>
                     <select id="tableSelect">
-                        <option value="discovered_content">Discovered Content</option>
+                        <option value="content_impressions">Content Impressions</option>
                         <option value="bot_sessions">Bot Sessions</option>
-                        <option value="interactions">Interactions</option>
-                        <option value="trends">Trends</option>
+                        <option value="engagement_events">Engagement Events</option>
+                        <option value="creator_profiles">Creator Profiles</option>
+                        <option value="trend_metrics">Trend Metrics</option>
+                        <option value="competitor_content">Competitor Content</option>
+                        <option value="trending_creators_breakdown">Trending Creators</option>
+                        <option value="icp_engagement_summary">ICP Engagement Summary</option>
                     </select>
                 </div>
                 <div class="control-group">
@@ -348,11 +352,11 @@
                 let query = supabase.from(table).select('*');
 
                 // Apply filters
-                if (platform !== 'all' && table === 'discovered_content') {
+                if (platform !== 'all' && (table === 'content_impressions' || table === 'creator_profiles' || table === 'trend_metrics')) {
                     query = query.eq('platform', platform);
                 }
 
-                if (viralOnly && table === 'discovered_content') {
+                if (viralOnly && table === 'content_impressions') {
                     query = query.eq('is_viral', true);
                 }
 
@@ -377,7 +381,9 @@
                     }
                     
                     if (startTime) {
-                        const timeColumn = table === 'discovered_content' ? 'discovered_at' : 'created_at';
+                        let timeColumn = 'created_at';
+                        if (table === 'content_impressions') timeColumn = 'viewed_at';
+                        if (table === 'engagement_events') timeColumn = 'engaged_at';
                         query = query.gte(timeColumn, startTime.toISOString());
                     }
                 }
@@ -416,15 +422,15 @@
             }
 
             // Build table rows based on table type
-            if (table === 'discovered_content') {
+            if (table === 'content_impressions') {
                 tableBody.innerHTML = data.map(row => `
                     <tr>
-                        <td>${new Date(row.discovered_at).toLocaleString()}</td>
+                        <td>${new Date(row.viewed_at || row.created_at).toLocaleString()}</td>
                         <td><span class="platform-badge ${row.platform}">${row.platform}</span></td>
-                        <td><a href="${row.url}" target="_blank">@${row.creator_username}</a></td>
+                        <td><a href="${row.content_url}" target="_blank">@${row.creator_username}</a></td>
                         <td title="${row.caption}">${row.caption ? row.caption.substring(0, 50) + '...' : '-'}</td>
-                        <td>${formatNumber(row.likes)}</td>
-                        <td>${formatNumber(row.comments)}</td>
+                        <td>${formatNumber(row.likes_count)}</td>
+                        <td>${formatNumber(row.comments_count)}</td>
                         <td>${row.engagement_rate ? row.engagement_rate.toFixed(2) + '%' : '-'}</td>
                         <td>${row.is_viral ? '<span class="viral-badge">VIRAL</span>' : '-'}</td>
                     </tr>
@@ -454,7 +460,7 @@
         }
 
         function updateStats(data, table) {
-            if (table === 'discovered_content') {
+            if (table === 'content_impressions') {
                 document.getElementById('totalRecords').textContent = data.length;
                 document.getElementById('viralContent').textContent = data.filter(d => d.is_viral).length;
                 

@@ -6,12 +6,14 @@
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 puppeteer.use(StealthPlugin());
+const DataRecorder = require('../services/data-recorder');
 
 class InstagramBot {
     constructor(session, supabase, socket) {
         this.session = session;
         this.supabase = supabase;
         this.socket = socket;
+        this.dataRecorder = new DataRecorder(supabase);
         this.browser = null;
         this.page = null;
         this.isRunning = false;
@@ -19,6 +21,7 @@ class InstagramBot {
         this.engagements = 0;
         this.trendsFound = 0;
         this.currentContentId = null;
+        this.currentContent = null;
     }
 
     async start() {
@@ -128,12 +131,24 @@ class InstagramBot {
                 const reelData = await this.extractReelData();
                 
                 if (reelData) {
-                    // Save to database
-                    await this.saveContent(reelData);
+                    // Calculate dwell time
+                    const dwellTime = this.calculateDwellTime(reelData);
+                    reelData.dwellTime = Math.floor(dwellTime / 1000); // Convert to seconds
+                    
+                    // Save to database using data recorder
+                    await this.dataRecorder.recordContentImpression(
+                        this.session.session_id || this.session.id,
+                        reelData
+                    );
+                    
+                    // Store current content reference
+                    this.currentContent = reelData;
+                    this.currentContentId = reelData.contentId;
+                    this.contentViewed++;
                     
                     // Emit progress
                     this.socket.emit('content-discovered', {
-                        sessionId: this.session.id,
+                        sessionId: this.session.session_id || this.session.id,
                         content: reelData,
                         stats: {
                             contentViewed: this.contentViewed,
@@ -142,8 +157,7 @@ class InstagramBot {
                         }
                     });
                     
-                    // Simulate human-like dwell time
-                    const dwellTime = this.calculateDwellTime(reelData);
+                    // Simulate human-like viewing
                     await this.page.waitForTimeout(dwellTime);
                     
                     // Randomly engage based on profile
@@ -175,46 +189,94 @@ class InstagramBot {
                 const video = document.querySelector('video');
                 if (!video) return null;
                 
-                // Get creator info
-                const creatorElement = document.querySelector('a[role="link"] span');
-                const creator = creatorElement ? creatorElement.innerText : 'unknown';
+                // Get creator info with more details
+                const getCreatorInfo = () => {
+                    const creatorLink = document.querySelector('header a[href*="/"]');
+                    const creatorElement = creatorLink?.querySelector('span');
+                    const profilePic = document.querySelector('header img[alt*="profile"]');
+                    const verifiedBadge = document.querySelector('header svg[aria-label="Verified"]');
+                    
+                    return {
+                        username: creatorElement ? creatorElement.innerText : 'unknown',
+                        profilePicUrl: profilePic ? profilePic.src : null,
+                        isVerified: !!verifiedBadge,
+                        profileUrl: creatorLink ? creatorLink.href : null
+                    };
+                };
                 
-                // Get caption
+                const creator = getCreatorInfo();
+                
+                // Get caption and extract mentions
                 const captionElement = document.querySelector('h1');
                 const caption = captionElement ? captionElement.innerText : '';
                 
-                // Extract hashtags
+                // Extract hashtags and mentions
                 const hashtagRegex = /#[a-zA-Z0-9_]+/g;
+                const mentionRegex = /@[a-zA-Z0-9_]+/g;
                 const hashtags = caption.match(hashtagRegex) || [];
+                const mentions = caption.match(mentionRegex) || [];
                 
-                // Get metrics (these might need adjustment based on Instagram's current layout)
-                const getLikeCount = () => {
-                    const likeElement = document.querySelector('section span');
-                    if (!likeElement) return 0;
-                    const text = likeElement.innerText;
-                    return parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                // Get music/audio info
+                const getMusicInfo = () => {
+                    const musicElement = document.querySelector('a[href*="/audio/"]');
+                    return musicElement ? musicElement.innerText : null;
                 };
                 
-                const getCommentCount = () => {
-                    const elements = document.querySelectorAll('section span');
-                    for (let el of elements) {
-                        if (el.innerText.includes('comment')) {
-                            return parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
+                // Get metrics with better parsing
+                const getMetrics = () => {
+                    const metrics = {
+                        likes: 0,
+                        comments: 0,
+                        shares: 0,
+                        saves: 0,
+                        views: 0
+                    };
+                    
+                    // Try to find metric buttons
+                    const buttons = document.querySelectorAll('button[aria-label]');
+                    buttons.forEach(btn => {
+                        const label = btn.getAttribute('aria-label');
+                        const text = btn.innerText;
+                        const num = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                        
+                        if (label && num > 0) {
+                            if (label.includes('like')) metrics.likes = num;
+                            else if (label.includes('comment')) metrics.comments = num;
+                            else if (label.includes('share')) metrics.shares = num;
+                            else if (label.includes('save')) metrics.saves = num;
                         }
+                    });
+                    
+                    // Try to get view count
+                    const viewElement = document.querySelector('span:contains("views")');
+                    if (viewElement) {
+                        metrics.views = parseInt(viewElement.innerText.replace(/[^0-9]/g, '')) || 0;
                     }
-                    return 0;
+                    
+                    return metrics;
                 };
+                
+                const metrics = getMetrics();
+                const music = getMusicInfo();
                 
                 return {
                     platform: 'instagram',
                     contentType: 'reel',
-                    creator: creator,
+                    contentId: `ig_reel_${Date.now()}`,
+                    creator: creator.username,
+                    creatorProfilePic: creator.profilePicUrl,
+                    creatorVerified: creator.isVerified,
                     caption: caption,
                     hashtags: hashtags,
+                    mentions: mentions,
+                    music: music,
                     url: window.location.href,
                     thumbnailUrl: video.poster || '',
-                    likes: getLikeCount(),
-                    comments: getCommentCount(),
+                    likes: metrics.likes,
+                    comments: metrics.comments,
+                    shares: metrics.shares,
+                    saves: metrics.saves,
+                    views: metrics.views,
                     timestamp: new Date().toISOString()
                 };
             });
@@ -266,9 +328,16 @@ class InstagramBot {
                 await likeButton.click();
                 await this.page.waitForTimeout(500 + Math.random() * 1000);
                 
-                // Save interaction
-                await this.saveInteraction('like', this.currentContentId);
-                this.engagements++;
+                // Record engagement
+                if (this.currentContent) {
+                    await this.dataRecorder.recordEngagement(
+                        this.session.session_id || this.session.id,
+                        this.currentContentId,
+                        'like',
+                        this.currentContent.creator
+                    );
+                    this.engagements++;
+                }
             }
         } catch (error) {
             console.error('Error liking content:', error);
@@ -298,7 +367,8 @@ class InstagramBot {
         }
     }
 
-    async saveContent(content) {
+    // Content saving is now handled by DataRecorder
+    async saveContentOld(content) {
         try {
             // Generate content ID
             const contentId = `ig_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
