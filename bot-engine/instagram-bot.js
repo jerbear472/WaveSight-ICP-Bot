@@ -214,13 +214,15 @@ class InstagramBot extends BotBase {
     this.logger.info('Feed scroll completed', { 
       duration: totalDuration,
       impressions: this.impressions.length,
-      engagements: this.engagements.length
+      engagements: this.engagements.length,
+      reason: this.isActive ? 'Duration reached' : 'Stopped by user'
     });
     this.emit('session-complete', {
       duration: totalDuration,
       impressions: this.impressions.length,
       engagements: this.engagements.length,
-      viewedPosts: this.viewedPosts.size
+      viewedPosts: this.viewedPosts.size,
+      completionReason: this.isActive ? 'duration_reached' : 'user_stopped'
     });
   }
 

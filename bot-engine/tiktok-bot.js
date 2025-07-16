@@ -216,13 +216,15 @@ class TikTokBot extends BotBase {
     this.logger.info('TikTok scroll completed', { 
       duration: totalDuration,
       videosWatched: this.viewedVideos.size,
-      engagements: this.engagements.length
+      engagements: this.engagements.length,
+      reason: this.isActive ? 'Duration reached' : 'Stopped by user'
     });
     this.emit('session-complete', {
       duration: totalDuration,
       impressions: this.impressions.length,
       engagements: this.engagements.length,
-      videosWatched: this.viewedVideos.size
+      videosWatched: this.viewedVideos.size,
+      completionReason: this.isActive ? 'duration_reached' : 'user_stopped'
     });
   }
 

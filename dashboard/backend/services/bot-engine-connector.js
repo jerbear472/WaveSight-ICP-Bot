@@ -259,6 +259,7 @@ class BotEngineConnector {
           
           // Stop the bot
           if (botInfo.bot.isActive) {
+            console.log(`🛑 Setting isActive to false for bot`);
             botInfo.bot.isActive = false;
           }
           
@@ -279,8 +280,14 @@ class BotEngineConnector {
             console.log(`Checking bot ${id}...`);
             if (info.session && info.session.sessionId === session.orchestratorSessionId) {
               console.log(`🤖 Found bot by iteration: ${id}`);
-              if (info.bot && info.bot.cleanup) {
-                await info.bot.cleanup();
+              if (info.bot) {
+                if (info.bot.isActive) {
+                  console.log(`🛑 Setting isActive to false for bot`);
+                  info.bot.isActive = false;
+                }
+                if (info.bot.cleanup) {
+                  await info.bot.cleanup();
+                }
               }
               this.orchestrator.activeBots.delete(id);
               break;
