@@ -214,7 +214,7 @@ class BotOrchestrator extends EventEmitter {
       
       // Create appropriate bot instance
       const botConfig = {
-        headless: true,
+        headless: false, // Show browser window
         proxyUrl: this.getProxyUrl(),
         credentials: session.credentials
       };
