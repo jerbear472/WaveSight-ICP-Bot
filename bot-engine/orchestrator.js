@@ -573,28 +573,28 @@ class BotOrchestrator extends EventEmitter {
   }
 }
 
-// Start orchestrator if run directly
-if (require.main === module) {
-  const orchestrator = new BotOrchestrator();
-  
-  orchestrator.initialize()
-    .then(() => {
-      console.log('Bot Orchestrator started successfully');
-      
-      // Start initial sessions
-      orchestrator.runScheduledSessions();
-    })
-    .catch(error => {
-      console.error('Failed to start orchestrator:', error);
-      process.exit(1);
-    });
-
-  // Handle shutdown
-  process.on('SIGINT', async () => {
-    console.log('\nShutting down orchestrator...');
-    await orchestrator.stop();
-    process.exit(0);
-  });
-}
+// DISABLED: Auto-start when run directly - orchestrator should only be controlled via dashboard
+// if (require.main === module) {
+//   const orchestrator = new BotOrchestrator();
+//   
+//   orchestrator.initialize()
+//     .then(() => {
+//       console.log('Bot Orchestrator started successfully');
+//       
+//       // Start initial sessions
+//       orchestrator.runScheduledSessions();
+//     })
+//     .catch(error => {
+//       console.error('Failed to start orchestrator:', error);
+//       process.exit(1);
+//     });
+//
+//   // Handle shutdown
+//   process.on('SIGINT', async () => {
+//     console.log('\nShutting down orchestrator...');
+//     await orchestrator.stop();
+//     process.exit(0);
+//   });
+// }
 
 module.exports = BotOrchestrator;
