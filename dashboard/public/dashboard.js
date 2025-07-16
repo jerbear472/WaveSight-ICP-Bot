@@ -688,10 +688,16 @@ async function startBot() {
         dashboard.showNotification('Bot session completed', 'success');
         
         // Reset UI
+        currentBotSession = null;
         statusIndicator.style.background = '#10b981';
         statusText.textContent = 'Backend Connected';
         startButton.disabled = false;
         startButton.textContent = 'Start Bot Session';
+        
+        // Show start button, hide stop button
+        const stopButton = document.querySelector('.stop-bot-btn');
+        startButton.style.display = 'block';
+        stopButton.style.display = 'none';
       });
       
       window.botClient.onError((error) => {
@@ -709,9 +715,16 @@ async function startBot() {
       const result = await window.botClient.startBot(platform, profileType, duration);
       console.log('Bot started:', result);
       
+      // Save session ID and update UI
+      currentBotSession = result.sessionId;
       dashboard.showNotification('🔴 REAL Bot session started - Check the Chrome browser window!', 'success');
       statusText.textContent = 'Real Bot Running';
       statusIndicator.style.background = '#10b981';
+      
+      // Show stop button, hide start button
+      const stopButton = document.querySelector('.stop-bot-btn');
+      startButton.style.display = 'none';
+      stopButton.style.display = 'block';
       
     } else {
       throw new Error('Bot client not loaded. Include bot-client.js script.');
@@ -726,6 +739,50 @@ async function startBot() {
     statusText.textContent = 'Backend Not Connected';
     startButton.disabled = false;
     startButton.textContent = 'Start Bot Session';
+  }
+}
+
+// Global variable to track current session
+let currentBotSession = null;
+
+async function stopBot() {
+  const startButton = document.querySelector('.start-bot-btn');
+  const stopButton = document.querySelector('.stop-bot-btn');
+  const statusIndicator = document.querySelector('.status-indicator');
+  const statusText = document.querySelector('.status-text');
+  
+  try {
+    if (!currentBotSession) {
+      dashboard.showNotification('No active bot session to stop', 'error');
+      return;
+    }
+    
+    // Disable stop button while stopping
+    stopButton.disabled = true;
+    stopButton.textContent = 'Stopping...';
+    
+    // Stop the bot
+    if (window.botClient) {
+      await window.botClient.stopBot(currentBotSession);
+      dashboard.showNotification('Bot session stopped', 'success');
+    }
+    
+    // Reset UI
+    currentBotSession = null;
+    statusIndicator.style.background = '#64748b';
+    statusText.textContent = 'Bot Stopped';
+    startButton.style.display = 'block';
+    stopButton.style.display = 'none';
+    stopButton.disabled = false;
+    stopButton.textContent = 'Stop Bot Session';
+    
+  } catch (error) {
+    console.error('Failed to stop bot:', error);
+    dashboard.showNotification('Failed to stop bot: ' + error.message, 'error');
+    
+    // Reset UI anyway
+    stopButton.disabled = false;
+    stopButton.textContent = 'Stop Bot Session';
   }
 }
 

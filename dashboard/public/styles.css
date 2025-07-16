@@ -237,6 +237,8 @@ body {
   gap: 0.5rem;
   flex: 1;
   justify-content: center;
+  flex-wrap: nowrap; /* Prevent wrapping */
+  white-space: nowrap; /* Keep text on one line */
 }
 
 .nav-item {
@@ -247,6 +249,8 @@ body {
   text-decoration: none;
   color: var(--text-secondary);
   border-radius: 0.5rem;
+  white-space: nowrap; /* Prevent text from wrapping */
+  flex-shrink: 0; /* Prevent items from shrinking */
   transition: all 0.2s ease;
   position: relative;
   font-weight: 500;
@@ -862,6 +866,36 @@ tr:hover {
 }
 
 .start-bot-btn:disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Bot Control Buttons Container */
+.bot-control-buttons {
+  display: flex;
+  gap: 1rem;
+  align-self: end;
+}
+
+/* Stop Bot Button */
+.stop-bot-btn {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+}
+
+.stop-bot-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(255, 68, 68, 0.5);
+}
+
+.stop-bot-btn:disabled {
   background: var(--text-muted);
   cursor: not-allowed;
 }
