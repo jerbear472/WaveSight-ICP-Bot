@@ -133,10 +133,25 @@ class InstagramBot extends BotBase {
     const startTime = Date.now();
     const { behaviorPatterns, personalityTraits } = this.icpProfile;
 
-    this.logger.info('Starting feed scroll', { duration, profile: this.icpProfile.profileName });
+    // Set scroll behavior based on persona
+    const scrollSpeedMap = {
+      'fast': { pause: [1000, 3000], scrollAmount: [300, 600] },
+      'moderate': { pause: [2000, 5000], scrollAmount: [200, 400] },
+      'slow': { pause: [3000, 7000], scrollAmount: [150, 300] }
+    };
+    const scrollBehavior = scrollSpeedMap[behaviorPatterns.scrollSpeed] || scrollSpeedMap['moderate'];
+
+    this.logger.info('Starting feed scroll', { 
+      duration, 
+      profile: this.icpProfile.profileName,
+      scrollSpeed: behaviorPatterns.scrollSpeed,
+      engagementRate: behaviorPatterns.engagementRate,
+      interests: this.icpProfile.interests
+    });
+    
     this.emit('status', {
       status: 'scrolling',
-      message: `Scrolling Instagram feed as ${this.icpProfile.profileName}`
+      message: `Scrolling Instagram feed as ${this.icpProfile.profileName} (${behaviorPatterns.scrollSpeed} speed, ${behaviorPatterns.engagementRate} engagement)`
     });
 
     while (Date.now() - startTime < duration && this.isActive) {
@@ -194,13 +209,16 @@ class InstagramBot extends BotBase {
             await this.engageWithPost(post, impression.id, postData);
           }
 
-          // Random pause between posts
-          await this.randomSleep(500, 2000);
+          // Pause between posts based on scroll speed
+          await this.randomSleep(...scrollBehavior.pause);
         }
 
-        // Scroll to load more content
-        await this.humanScroll(400 + Math.random() * 200);
-        await this.randomSleep(1000, 3000);
+        // Scroll to load more content based on persona speed
+        const scrollAmount = this.randomBetween(...scrollBehavior.scrollAmount);
+        await this.humanScroll(scrollAmount);
+        
+        // Pause after scrolling based on persona
+        await this.randomSleep(...scrollBehavior.pause);
 
       } catch (error) {
         this.logger.error('Error during feed scroll', { error: error.message });
@@ -493,33 +511,79 @@ class InstagramBot extends BotBase {
    * Engage with post based on ICP behavior
    */
   async engageWithPost(postElement, impressionId, postData) {
-    const { personalityTraits } = this.icpProfile;
+    const { personalityTraits, behaviorPatterns } = this.icpProfile;
     const engagementTypes = [];
 
+    // Get engagement rate based on profile type
+    const engagementRateMap = {
+      'high': 0.3,
+      'very_high': 0.5,
+      'moderate': 0.15,
+      'selective': 0.08,
+      'low': 0.05
+    };
+    const baseEngagementRate = engagementRateMap[behaviorPatterns.engagementRate] || 0.1;
+
+    // Check if content matches persona interests
+    const contentMatchesInterests = this.checkContentInterestMatch(postData);
+    const adjustedEngagementRate = contentMatchesInterests 
+      ? baseEngagementRate * 1.5 
+      : baseEngagementRate * 0.7;
+
     // Like decision
-    if (Math.random() < personalityTraits.impulsiveness * 0.5) {
+    if (Math.random() < adjustedEngagementRate) {
       const likeButton = await postElement.$(this.selectors.likeButton);
-      if (likeButton) {
-        await this.randomSleep(500, 1500);
-        await likeButton.click();
+      if (likeButton && await likeButton.isVisible()) {
+        // Natural hesitation before liking
+        await this.randomSleep(800, 2500);
+        
+        // Double-tap simulation for mobile behavior
+        if (this.icpProfile.deviceType.includes('mobile') && Math.random() < 0.3) {
+          await postElement.dblclick();
+        } else {
+          await likeButton.click();
+        }
+        
         engagementTypes.push('like');
+        this.logger.info(`Liked post from ${postData.creatorUsername}`);
         
         await this.logEngagement(impressionId, 'like', {
+          contentId: postData.contentId,
+          reason: 'interest_match'
+        });
+      }
+    }
+
+    // Save decision (based on content value)
+    if (contentMatchesInterests && Math.random() < adjustedEngagementRate * 0.3) {
+      const saveButton = await postElement.$(this.selectors.saveButton);
+      if (saveButton && await saveButton.isVisible()) {
+        await this.randomSleep(1000, 2000);
+        await saveButton.click();
+        engagementTypes.push('save');
+        
+        await this.logEngagement(impressionId, 'save', {
           contentId: postData.contentId
         });
       }
     }
 
-    // Follow decision (lower probability)
-    if (Math.random() < 0.05 && !postData.isSponsored) {
+    // Follow decision (much lower probability, only for high-value content)
+    const shouldFollow = !postData.isSponsored && 
+                        contentMatchesInterests && 
+                        Math.random() < 0.02 &&
+                        (postData.metrics.likes > 5000 || postData.metrics.followers > 10000);
+                        
+    if (shouldFollow) {
       const followButton = await postElement.$(this.selectors.followButton);
-      if (followButton) {
-        await this.randomSleep(1000, 2000);
+      if (followButton && await followButton.isVisible()) {
+        await this.randomSleep(2000, 4000);
         await followButton.click();
         engagementTypes.push('follow');
         
         await this.logEngagement(impressionId, 'follow', {
-          creator: postData.creatorUsername
+          creator: postData.creatorUsername,
+          reason: 'high_value_content'
         });
       }
     }
@@ -544,6 +608,60 @@ class InstagramBot extends BotBase {
         engagements: engagementTypes
       });
     }
+  }
+
+  /**
+   * Check if content matches persona interests
+   */
+  checkContentInterestMatch(postData) {
+    const { interests } = this.icpProfile;
+    const { caption = '', hashtags = [] } = postData;
+    
+    // Convert everything to lowercase for matching
+    const contentText = `${caption} ${hashtags.join(' ')}`.toLowerCase();
+    const interestsLower = interests.map(i => i.toLowerCase());
+    
+    // Check for direct interest matches
+    for (const interest of interestsLower) {
+      if (contentText.includes(interest)) {
+        return true;
+      }
+    }
+    
+    // Check for related terms based on persona type
+    const relatedTerms = this.getRelatedTerms();
+    for (const term of relatedTerms) {
+      if (contentText.includes(term)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Get related terms based on persona type
+   */
+  getRelatedTerms() {
+    const profileType = this.icpProfile.profileName.split('_')[0];
+    
+    const termMap = {
+      'gen-z-tech-enthusiast': ['startup', 'code', 'programming', 'developer', 'blockchain', 'nft', 'metaverse', 'app'],
+      'finance-focused-millennials': ['invest', 'stock', 'crypto', 'money', 'wealth', 'passive income', 'financial', 'trading'],
+      'health-wellness-women': ['yoga', 'meditation', 'selfcare', 'wellness', 'healthy', 'organic', 'mindfulness', 'skincare'],
+      'parenting': ['kids', 'baby', 'mom', 'dad', 'family', 'children', 'parenting', 'toddler'],
+      'fitness': ['workout', 'gym', 'exercise', 'training', 'muscle', 'cardio', 'nutrition', 'protein'],
+      'fashion': ['style', 'outfit', 'ootd', 'fashion', 'clothing', 'designer', 'trend', 'look']
+    };
+    
+    return termMap[profileType] || [];
+  }
+
+  /**
+   * Get random number between min and max
+   */
+  randomBetween(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   /**
@@ -677,7 +795,7 @@ class InstagramBot extends BotBase {
    */
   async handleAllLoginPopups() {
     try {
-      const maxAttempts = 5;
+      const maxAttempts = 7;
       let attempts = 0;
       
       while (attempts < maxAttempts) {
@@ -687,14 +805,19 @@ class InstagramBot extends BotBase {
         
         let popupHandled = false;
         
-        // 1. Handle "Save Your Login Info?" popup
+        // Wait a bit for any popups to appear
+        await this.sleep(1000);
+        
+        // 1. Handle "Save Your Login Info?" popup (most common)
         const saveLoginSelectors = [
           'button:has-text("Not Now")',
           'button:has-text("Not now")',
           'a:has-text("Not Now")',
           'a:has-text("Not now")',
           'button:has-text("Skip")',
-          '[role="button"]:has-text("Not Now")'
+          '[role="button"]:has-text("Not Now")',
+          'button:has-text("Save")', // Sometimes we need to save to proceed
+          '[type="button"]:has-text("Not Now")'
         ];
         
         for (const selector of saveLoginSelectors) {
@@ -702,11 +825,16 @@ class InstagramBot extends BotBase {
             const elements = await this.page.$$(selector);
             for (const element of elements) {
               if (await element.isVisible()) {
-                await element.click();
-                this.logger.info('Dismissed save login popup');
-                await this.sleep(2000);
-                popupHandled = true;
-                break;
+                // Check if it's in a save login context
+                const text = await this.page.evaluate(() => document.body.textContent);
+                if (text.includes('Save Your Login') || text.includes('save your login') || 
+                    text.includes('Save login') || currentUrl.includes('save')) {
+                  await element.click();
+                  this.logger.info(`Clicked "${selector}" on save login popup`);
+                  await this.sleep(2000);
+                  popupHandled = true;
+                  break;
+                }
               }
             }
             if (popupHandled) break;
