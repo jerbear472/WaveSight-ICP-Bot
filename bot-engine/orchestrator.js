@@ -216,7 +216,7 @@ class BotOrchestrator extends EventEmitter {
       // Create appropriate bot instance with environment-aware config
       const botConfig = {
         headless: envConfig.botConfig.headless,
-        proxyUrl: this.getProxyUrl(),
+        proxyUrl: null, // Disable proxy for local development
         credentials: session.credentials,
         slowMo: envConfig.botConfig.slowMo,
         viewport: envConfig.botConfig.viewport
@@ -316,7 +316,7 @@ class BotOrchestrator extends EventEmitter {
       // Log session data
       const sessionData = {
         id: session.id,
-        icpProfileId: session.profile.id,
+        profileType: session.profile.profileName || session.profile.type,
         platform: session.platform,
         startTime: new Date(startTime),
         endTime: new Date(),
@@ -351,7 +351,7 @@ class BotOrchestrator extends EventEmitter {
       // Log failed session
       await this.dataLogger.saveBotSession({
         id: session.id,
-        icpProfileId: session.profile.id,
+        profileType: session.profile.profileName || session.profile.type,
         platform: session.platform,
         startTime: new Date(startTime),
         endTime: new Date(),

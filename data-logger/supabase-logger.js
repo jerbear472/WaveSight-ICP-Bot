@@ -121,12 +121,12 @@ class SupabaseLogger {
         .from('bot_sessions')
         .insert({
           session_id: sessionData.id,
-          icp_profile_id: sessionData.icpProfileId,
           platform: sessionData.platform,
-          started_at: sessionData.startTime,
-          ended_at: sessionData.endTime,
+          profile_type: sessionData.profileType || 'unknown',
+          start_time: sessionData.startTime,
+          end_time: sessionData.endTime,
           status: sessionData.status,
-          error_log: sessionData.errorLog
+          duration_ms: sessionData.endTime ? (new Date(sessionData.endTime) - new Date(sessionData.startTime)) : null
         })
         .select()
         .single();
