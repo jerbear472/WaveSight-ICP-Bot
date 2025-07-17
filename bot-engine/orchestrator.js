@@ -308,9 +308,9 @@ class BotOrchestrator extends EventEmitter {
     const startTime = Date.now();
     
     try {
-      // Run bot session
+      // Run bot session with the specific duration for this session
       const result = await bot.start({
-        duration: this.config.sessionDuration
+        duration: session.duration || this.config.sessionDuration
       });
 
       // Log session data

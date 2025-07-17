@@ -133,11 +133,11 @@ class InstagramBot extends BotBase {
     const startTime = Date.now();
     const { behaviorPatterns, personalityTraits } = this.icpProfile;
 
-    // Set scroll behavior based on persona
+    // Set scroll behavior based on persona - more human-like speeds
     const scrollSpeedMap = {
-      'fast': { pause: [1000, 3000], scrollAmount: [300, 600] },
-      'moderate': { pause: [2000, 5000], scrollAmount: [200, 400] },
-      'slow': { pause: [3000, 7000], scrollAmount: [150, 300] }
+      'fast': { pause: [2000, 4000], scrollAmount: [200, 350] },      // Even fast users pause to read
+      'moderate': { pause: [3000, 6000], scrollAmount: [150, 250] },  // Normal reading speed
+      'slow': { pause: [4000, 8000], scrollAmount: [100, 200] }       // Careful readers
     };
     const scrollBehavior = scrollSpeedMap[behaviorPatterns.scrollSpeed] || scrollSpeedMap['moderate'];
 
@@ -175,6 +175,12 @@ class InstagramBot extends BotBase {
         this.logger.debug(`Found ${allArticles.length} articles, ${posts.length} are feed posts`);
         
         for (const post of posts) {
+          // Check if we should stop
+          if (!this.isActive) {
+            this.logger.info('Bot stop requested, breaking post loop');
+            break;
+          }
+          
           // Check if post is in viewport
           const isVisible = await post.isVisible();
           if (!isVisible) continue;
@@ -211,6 +217,12 @@ class InstagramBot extends BotBase {
 
           // Pause between posts based on scroll speed
           await this.randomSleep(...scrollBehavior.pause);
+          
+          // Check duration limit
+          if (Date.now() - startTime >= duration) {
+            this.logger.info('Duration limit reached, ending scroll');
+            break;
+          }
         }
 
         // Scroll to load more content based on persona speed

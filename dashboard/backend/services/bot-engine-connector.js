@@ -78,6 +78,7 @@ class BotEngineConnector {
         platform,
         profileType,
         startTime: Date.now(),
+        duration: duration || 300000,
         contentViewed: 0,
         engagements: 0
       });
