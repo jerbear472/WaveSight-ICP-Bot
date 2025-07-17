@@ -78,10 +78,8 @@ class InstagramBot extends BotBase {
         // After login, wait a bit for session to establish
         await this.sleep(2000);
         
-        // After login, always navigate to home feed
-        this.logger.info('Navigating to home feed after login');
-        await this.page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' });
-        await this.sleep(3000);
+        // After login, handle any remaining popups
+        await this.handleAllLoginPopups();
       } else {
         // Already logged in
         this.logger.info('Already logged in, navigating to feed');
@@ -656,20 +654,8 @@ class InstagramBot extends BotBase {
         await this.dismissPopup(['Not Now', 'Not now', 'Skip']);
       }
       
-      // Check if we're still not on the home page
-      await this.sleep(2000);
-      const currentUrl = this.page.url();
-      
-      // Handle any other popups that might appear
-      if (!currentUrl.endsWith('instagram.com/')) {
-        this.logger.info('Checking for additional popups...');
-        
-        // Turn on Notifications popup
-        await this.dismissPopup(['Not Now', 'Not now', 'Skip']);
-        
-        // Any other "Save" or "Add" popups
-        await this.dismissPopup(['Not Now', 'Not now', 'Skip', 'Cancel']);
-      }
+      // Use comprehensive popup handler
+      await this.handleAllLoginPopups();
       
       this.logger.info('Instagram login successful');
       this.emit('status', { 
@@ -683,6 +669,136 @@ class InstagramBot extends BotBase {
         message: error.message
       });
       throw error;
+    }
+  }
+
+  /**
+   * Handle all Instagram popups comprehensively
+   */
+  async handleAllLoginPopups() {
+    try {
+      const maxAttempts = 5;
+      let attempts = 0;
+      
+      while (attempts < maxAttempts) {
+        attempts++;
+        const currentUrl = this.page.url();
+        this.logger.info(`Handling popups - Attempt ${attempts}, URL: ${currentUrl}`);
+        
+        let popupHandled = false;
+        
+        // 1. Handle "Save Your Login Info?" popup
+        const saveLoginSelectors = [
+          'button:has-text("Not Now")',
+          'button:has-text("Not now")',
+          'a:has-text("Not Now")',
+          'a:has-text("Not now")',
+          'button:has-text("Skip")',
+          '[role="button"]:has-text("Not Now")'
+        ];
+        
+        for (const selector of saveLoginSelectors) {
+          try {
+            const elements = await this.page.$$(selector);
+            for (const element of elements) {
+              if (await element.isVisible()) {
+                await element.click();
+                this.logger.info('Dismissed save login popup');
+                await this.sleep(2000);
+                popupHandled = true;
+                break;
+              }
+            }
+            if (popupHandled) break;
+          } catch (e) {
+            // Continue
+          }
+        }
+        
+        // 2. Handle "Turn on Notifications" popup
+        try {
+          // Look for notification dialog
+          const notificationDialog = await this.page.$('[role="dialog"]:has-text("Turn on Notifications")');
+          if (notificationDialog) {
+            const notNowBtn = await notificationDialog.$('button:has-text("Not Now")');
+            if (notNowBtn) {
+              await notNowBtn.click();
+              this.logger.info('Dismissed notification popup');
+              await this.sleep(2000);
+              popupHandled = true;
+            }
+          }
+        } catch (e) {
+          // Continue
+        }
+        
+        // 3. Handle "Add Instagram to your Home screen?" popup
+        try {
+          const addToHomeDialog = await this.page.$('[role="dialog"]:has-text("Add Instagram")');
+          if (addToHomeDialog) {
+            const cancelBtn = await addToHomeDialog.$('button:has-text("Cancel"), button:has-text("Not Now")');
+            if (cancelBtn) {
+              await cancelBtn.click();
+              this.logger.info('Dismissed add to home screen popup');
+              await this.sleep(2000);
+              popupHandled = true;
+            }
+          }
+        } catch (e) {
+          // Continue
+        }
+        
+        // 4. Handle any generic close buttons in dialogs
+        try {
+          const closeButtons = await this.page.$$('[role="dialog"] button[aria-label="Close"], [role="dialog"] [aria-label="Close"], [role="dialog"] svg[aria-label="Close"]');
+          for (const button of closeButtons) {
+            if (await button.isVisible()) {
+              const parent = await button.evaluateHandle(el => el.closest('button') || el);
+              await parent.click();
+              this.logger.info('Closed a dialog using close button');
+              await this.sleep(1000);
+              popupHandled = true;
+              break;
+            }
+          }
+        } catch (e) {
+          // Continue
+        }
+        
+        // 5. Check if we're on the home feed
+        await this.sleep(1000);
+        const finalUrl = this.page.url();
+        
+        // Check for feed indicators
+        const feedIndicators = await Promise.all([
+          this.page.$('article'),
+          this.page.$('[role="main"]'),
+          this.page.$('div[data-testid="feeds-feed"]')
+        ]);
+        
+        const onFeed = feedIndicators.some(el => el !== null) || 
+                      finalUrl === 'https://www.instagram.com/' ||
+                      finalUrl.endsWith('instagram.com/') ||
+                      finalUrl.includes('/feed');
+        
+        if (onFeed && !popupHandled) {
+          this.logger.info('Successfully reached Instagram feed');
+          break;
+        }
+        
+        // 6. If still stuck after 3 attempts, try direct navigation
+        if (attempts >= 3 && !onFeed) {
+          this.logger.info('Attempting direct navigation to home feed');
+          await this.page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' });
+          await this.sleep(3000);
+        }
+        
+        await this.sleep(1000);
+      }
+      
+    } catch (error) {
+      this.logger.error('Error handling popups', { error: error.message });
+      // Don't throw - continue anyway
     }
   }
 
