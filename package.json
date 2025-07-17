@@ -16,7 +16,11 @@
     "bot:tiktok": "node bot-engine/tiktok-bot.js",
     "analytics": "node analytics/trend-processor.js",
     "dashboard": "node dashboard/server.js",
-    "demo": "node dashboard/demo-server.js"
+    "demo": "node dashboard/demo-server.js",
+    "start:all": "node start-servers.js",
+    "monitor": "node monitor-servers.js",
+    "status": "node check-status.js",
+    "stop:all": "lsof -ti:3000,3001 | xargs kill -9 2>/dev/null || true"
   },
   "keywords": ["icp", "bot", "monitoring", "instagram", "tiktok", "marketing", "analytics"],
   "author": "ICPScope Team",
