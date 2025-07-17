@@ -257,37 +257,50 @@ class BotEngineConnector {
         if (botInfo && botInfo.bot) {
           console.log(`🤖 Found bot to stop: ${session.orchestratorSessionId}`);
           
-          // Stop the bot
-          if (botInfo.bot.isActive) {
-            console.log(`🛑 Setting isActive to false for bot`);
-            botInfo.bot.isActive = false;
+          // IMMEDIATELY stop the bot - this is the key change
+          if (botInfo.bot) {
+            console.log(`🛑 Setting isActive to false for immediate stop`);
+            botInfo.bot.isActive = false; // This will break the loop immediately
+            
+            // Force immediate cleanup with a small delay to ensure the loop exits
+            setTimeout(async () => {
+              try {
+                console.log(`🧹 Cleaning up bot resources and closing browser...`);
+                if (botInfo.bot.cleanup && typeof botInfo.bot.cleanup === 'function') {
+                  await botInfo.bot.cleanup();
+                }
+                console.log(`✅ Bot cleanup completed`);
+              } catch (cleanupError) {
+                console.error(`⚠️ Error during cleanup:`, cleanupError);
+              }
+            }, 100);
           }
           
-          // Clean up browser and resources
-          if (botInfo.bot.cleanup && typeof botInfo.bot.cleanup === 'function') {
-            console.log(`🧹 Cleaning up bot resources and closing browser...`);
-            await botInfo.bot.cleanup();
-          }
-          
-          // Remove from active bots
+          // Remove from active bots immediately
           this.orchestrator.activeBots.delete(session.orchestratorSessionId);
-          console.log(`✅ Bot stopped and browser closed`);
+          console.log(`✅ Bot marked as stopped`);
         } else {
           console.warn(`⚠️ Bot not found in orchestrator active bots`);
           
           // Try to find by iterating through all bots as fallback
           for (const [id, info] of this.orchestrator.activeBots) {
             console.log(`Checking bot ${id}...`);
-            if (info.session && info.session.sessionId === session.orchestratorSessionId) {
+            if (info.session && info.session.id === session.orchestratorSessionId) {
               console.log(`🤖 Found bot by iteration: ${id}`);
               if (info.bot) {
-                if (info.bot.isActive) {
-                  console.log(`🛑 Setting isActive to false for bot`);
-                  info.bot.isActive = false;
-                }
-                if (info.bot.cleanup) {
-                  await info.bot.cleanup();
-                }
+                console.log(`🛑 Setting isActive to false for immediate stop`);
+                info.bot.isActive = false;
+                
+                // Force immediate cleanup
+                setTimeout(async () => {
+                  try {
+                    if (info.bot.cleanup) {
+                      await info.bot.cleanup();
+                    }
+                  } catch (cleanupError) {
+                    console.error(`⚠️ Error during cleanup:`, cleanupError);
+                  }
+                }, 100);
               }
               this.orchestrator.activeBots.delete(id);
               break;
