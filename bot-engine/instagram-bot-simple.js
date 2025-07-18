@@ -175,6 +175,24 @@ class InstagramBotSimple extends BotBase {
               viewDuration: 3000 // Default 3 seconds
             });
             
+            // Emit content discovered event for database storage
+            this.emit('content-discovered', {
+              contentId: postData.contentId,
+              platform: 'instagram',
+              contentType: postData.contentType,
+              creatorUsername: postData.creatorUsername,
+              creatorHandle: postData.creatorHandle,
+              caption: postData.caption,
+              hashtags: postData.hashtags,
+              thumbnailUrl: postData.thumbnailUrl,
+              likes: postData.metrics.likes,
+              comments: postData.metrics.comments,
+              shares: postData.metrics.shares,
+              saves: postData.metrics.saves,
+              url: await this.page.url(),
+              timestamp: new Date().toISOString()
+            });
+            
             this.logger.info('Logged post:', {
               creator: postData.creatorUsername,
               handle: postData.creatorHandle,
