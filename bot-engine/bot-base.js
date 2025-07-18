@@ -123,10 +123,11 @@ class BotBase extends EventEmitter {
       if (useSafari) {
         // Remove Chrome-specific args for Safari
         launchOptions.args = [];
-      } else {
-        // Use Chrome instead of Chromium for better compatibility
-        launchOptions.channel = 'chrome'; // This tells Playwright to use Chrome
+      } else if (this.config.browser === 'chrome' && process.env.NODE_ENV !== 'production') {
+        // Only use Chrome channel on local development
+        launchOptions.channel = 'chrome';
       }
+      // Otherwise use default chromium
 
       if (this.config.proxyUrl) {
         launchOptions.proxy = {
@@ -527,6 +528,21 @@ class BotBase extends EventEmitter {
         : 0,
       isActive: this.isActive
     };
+  }
+
+  /**
+   * Stop the bot
+   */
+  async stop() {
+    this.logger.info('Stopping bot...', { sessionId: this.sessionId });
+    this.isActive = false;
+    await this.cleanup();
+    
+    // Emit session complete
+    this.emit('session-complete', {
+      sessionId: this.sessionId,
+      platform: this.config.platform
+    });
   }
 }
 

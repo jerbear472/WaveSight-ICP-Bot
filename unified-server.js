@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
         platform,
         profileType: profileType || 'gen-z-tech-enthusiast',
         duration: duration || 300000, // 5 minutes default
-        browser: browser || 'chrome',
+        browser: browser || 'chromium', // Use chromium on production
         startTime: Date.now()
       };
 
