@@ -2,12 +2,14 @@
   "name": "icpscope",
   "version": "1.0.0",
   "description": "ICP Bot Monitoring System - Track what your ideal customers see on social platforms",
-  "main": "render-deploy.js",
+  "main": "index.js",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "node render-deploy.js",
+    "start": "node index.js",
+    "start:frontend": "node render-deploy.js",
+    "start:backend": "node start-backend.js",
     "dev": "nodemon dashboard/server.js",
     "build": "echo 'Build complete'",
     "test": "jest",
