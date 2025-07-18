@@ -104,16 +104,13 @@ async function checkBackendHealth() {
  * Initialize WebSocket connection
  */
 function initializeSocket() {
-  // Connect to same origin (unified server)
-  addLog('Connecting to backend...', 'info');
+  // Connect to backend on port 3001 (same as verification page)
+  addLog('Connecting to backend at http://localhost:3001...', 'info');
   
   // Create socket connection
-  socket = io({
-    transports: ['polling', 'websocket'],
-    reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 1000,
-    timeout: 20000
+  socket = io('http://localhost:3001', {
+    transports: ['websocket', 'polling'],
+    reconnection: true
   });
   
   // Connection handlers
@@ -323,7 +320,7 @@ function updateConnectionStatus(connected) {
   const statusText = document.getElementById('statusText');
   
   if (statusText) {
-    statusText.textContent = connected ? 'Backend Connected' : 'Backend Disconnected';
+    statusText.textContent = connected ? '✅ Connected to backend on port 3001' : '❌ Disconnected from backend';
   }
   
   if (statusIndicator) {
