@@ -3,10 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WaveSight Bot Dashboard</title>
+    <title>WaveSight - Live Surfer Bot</title>
     <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* WaveSight Branding */
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .wavesight-header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .wavesight-logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-link:hover {
+            color: #fff;
+        }
+        
+        .nav-link.active {
+            color: #00d4ff;
+        }
+        
+        .status-badge {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
         /* Additional styles for simplified dashboard */
         .bot-card {
             background: rgba(255, 255, 255, 0.05);
@@ -239,6 +319,22 @@
     </style>
 </head>
 <body>
+    <!-- WaveSight Header -->
+    <header class="wavesight-header">
+        <div class="header-content">
+            <a href="/" class="wavesight-logo">
+                <span class="logo-text">🌊 WAVESIGHT</span>
+            </a>
+            <nav class="nav-links">
+                <a href="#" class="nav-link">📊 Dashboard</a>
+                <a href="#" class="nav-link">📈 Marketing Insights</a>
+                <a href="#" class="nav-link active">🏄 Live Surfer Bot</a>
+                <a href="#" class="nav-link">🌊 Content Wave Feed</a>
+                <div class="status-badge">System Status: 🟢 Active</div>
+            </nav>
+        </div>
+    </header>
+
     <div class="dashboard-container">
         <header class="dashboard-header">
             <h1>🏄 Surfer Bot Dashboard</h1>

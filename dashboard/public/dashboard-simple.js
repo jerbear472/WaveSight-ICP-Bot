@@ -27,8 +27,11 @@ let activeBots = {
 };
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   console.log('Initializing simplified dashboard...');
+  
+  // First check if backend is reachable
+  await checkBackendHealth();
   
   // Connect to backend
   initializeSocket();
@@ -38,7 +41,41 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Start status updates
   setInterval(updateDashboard, 1000);
+  
+  // Periodic health checks
+  setInterval(checkBackendHealth, 30000);
 });
+
+/**
+ * Check backend health
+ */
+async function checkBackendHealth() {
+  const backendUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3001' 
+    : 'https://wavesight-bot-backend.onrender.com';
+    
+  try {
+    const response = await fetch(`${backendUrl}/health`, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      console.log('Backend health check passed');
+      return true;
+    } else {
+      console.error('Backend health check failed:', response.status);
+      return false;
+    }
+  } catch (error) {
+    console.error('Backend not reachable:', error);
+    updateConnectionStatus(false);
+    return false;
+  }
+}
 
 /**
  * Initialize WebSocket connection
@@ -51,11 +88,14 @@ function initializeSocket() {
   
   console.log('Connecting to:', backendUrl);
   
-  // Create socket connection
+  // Create socket connection with proper configuration
   socket = io(backendUrl, {
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'], // Start with polling for better compatibility
     reconnection: true,
-    reconnectionAttempts: 5
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000,
+    timeout: 20000,
+    withCredentials: true // Important for CORS
   });
   
   // Connection handlers
@@ -67,6 +107,15 @@ function initializeSocket() {
   socket.on('disconnect', () => {
     console.log('❌ Disconnected from backend');
     updateConnectionStatus(false);
+  });
+  
+  socket.on('connect_error', (error) => {
+    console.error('Connection error:', error.message);
+    updateConnectionStatus(false);
+  });
+  
+  socket.on('error', (error) => {
+    console.error('Socket error:', error);
   });
   
   // Bot event handlers
