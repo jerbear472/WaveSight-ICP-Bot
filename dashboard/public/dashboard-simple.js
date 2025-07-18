@@ -50,14 +50,12 @@ document.addEventListener('DOMContentLoaded', async function() {
  * Check backend health
  */
 async function checkBackendHealth() {
-  const backendUrl = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3001' 
-    : 'https://wavesight-bot-backend.onrender.com';
+  // Use same origin for unified server
+  const backendUrl = '';
     
   try {
     const response = await fetch(`${backendUrl}/health`, {
       method: 'GET',
-      mode: 'cors',
       headers: {
         'Content-Type': 'application/json'
       }
@@ -81,21 +79,16 @@ async function checkBackendHealth() {
  * Initialize WebSocket connection
  */
 function initializeSocket() {
-  // Determine backend URL based on environment
-  const backendUrl = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3001' 
-    : 'https://wavesight-bot-backend.onrender.com';
+  // Connect to same origin (unified server)
+  console.log('Connecting to unified server...');
   
-  console.log('Connecting to:', backendUrl);
-  
-  // Create socket connection with proper configuration
-  socket = io(backendUrl, {
-    transports: ['polling', 'websocket'], // Start with polling for better compatibility
+  // Create socket connection
+  socket = io({
+    transports: ['polling', 'websocket'],
     reconnection: true,
     reconnectionAttempts: 10,
     reconnectionDelay: 1000,
-    timeout: 20000,
-    withCredentials: true // Important for CORS
+    timeout: 20000
   });
   
   // Connection handlers
