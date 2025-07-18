@@ -71,15 +71,18 @@ class InstagramBotSimple extends BotBase {
       
       // Wait for navigation
       this.logger.info('Waiting for login to complete');
-      await this.sleep(2000);
+      await this.sleep(3000);
+      
+      // Take screenshot to see what's on screen
+      await this.screenshot('after-login-before-popup-check');
       
       // Handle save password popup
       await this.handleSavePasswordPopup();
       
-      await this.sleep(3000);
+      await this.sleep(2000);
       
-      // Take screenshot after login
-      await this.screenshot('after-login');
+      // Take screenshot after handling popup
+      await this.screenshot('after-popup-handling');
       
       // Check current URL
       const currentUrl = this.page.url();
@@ -122,31 +125,54 @@ class InstagramBotSimple extends BotBase {
     try {
       this.logger.info('Checking for save password popup');
       
-      // Look for "Save Your Login Info?" popup
-      // Instagram shows this with "Save Info" and "Not Now" buttons
-      const notNowButtons = await this.page.$$('button');
+      // Look for "Save Your Login Info?" or "Save Login Info" popup
+      // Try multiple selectors that Instagram uses
+      const popupSelectors = [
+        'button:has-text("Not Now")',
+        'button:has-text("Not now")', 
+        'div[role="button"]:has-text("Not Now")',
+        'div[role="button"]:has-text("Not now")',
+        'button:text-is("Not Now")',
+        'div:text-is("Not Now")',
+        '//button[contains(text(), "Not Now")]',
+        '//div[@role="button" and contains(text(), "Not Now")]'
+      ];
       
-      for (const button of notNowButtons) {
-        const buttonText = await button.innerText().catch(() => '');
-        if (buttonText.toLowerCase().includes('not now')) {
-          this.logger.info('Found "Not Now" button, clicking it');
-          await button.click();
-          await this.sleep(1000);
-          break;
+      for (const selector of popupSelectors) {
+        try {
+          const element = selector.startsWith('//') 
+            ? await this.page.locator(selector).first()
+            : await this.page.locator(selector).first();
+            
+          if (await element.isVisible({ timeout: 1000 })) {
+            this.logger.info(`Found save password popup with selector: ${selector}`);
+            await element.click();
+            this.logger.info('Clicked "Not Now" on save password popup');
+            await this.sleep(1000);
+            return;
+          }
+        } catch (e) {
+          // Continue trying other selectors
         }
       }
       
-      // Also check for the div-based button structure
-      const divButtons = await this.page.$$('div[role="button"]');
-      for (const div of divButtons) {
-        const text = await div.innerText().catch(() => '');
-        if (text.toLowerCase().includes('not now')) {
-          this.logger.info('Found "Not Now" div button, clicking it');
-          await div.click();
-          await this.sleep(1000);
-          break;
+      // If no popup found with selectors, try text search
+      const allButtons = await this.page.$$('button, div[role="button"]');
+      for (const button of allButtons) {
+        try {
+          const text = await button.textContent();
+          if (text && (text.includes('Not Now') || text.includes('Not now'))) {
+            this.logger.info(`Found "Not Now" button by text search: "${text}"`);
+            await button.click();
+            await this.sleep(1000);
+            return;
+          }
+        } catch (e) {
+          // Continue
         }
       }
+      
+      this.logger.info('No save password popup found');
       
     } catch (error) {
       this.logger.debug('Error handling save password popup:', error);
@@ -192,11 +218,40 @@ class InstagramBotSimple extends BotBase {
     
     this.logger.info('Starting to scroll feed');
     
+    // Try to dismiss any remaining popups before scrolling
+    await this.handleSavePasswordPopup();
+    await this.dismissAnyPopups();
+    
+    let noPostsCount = 0;
+    
     while (Date.now() - startTime < duration && this.isActive) {
       try {
         // Get all visible posts
         const posts = await this.page.$$('article');
         this.logger.info(`Visible posts: ${posts.length}`);
+        
+        // If no posts found, try to handle popups and navigate
+        if (posts.length === 0) {
+          noPostsCount++;
+          if (noPostsCount === 3) {
+            this.logger.warn('No posts found after 3 attempts, checking for popups');
+            await this.screenshot('no-posts-found');
+            await this.handleSavePasswordPopup();
+            await this.dismissAnyPopups();
+            
+            // Try clicking anywhere to dismiss overlays
+            await this.page.click('body').catch(() => {});
+            
+            // Try navigating to home explicitly
+            if (noPostsCount === 5) {
+              this.logger.info('Navigating to home page');
+              await this.page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' });
+              await this.sleep(3000);
+            }
+          }
+        } else {
+          noPostsCount = 0; // Reset counter when posts are found
+        }
         
         // Process each post
         for (const post of posts) {
