@@ -460,7 +460,12 @@ class ICPDashboard {
 
     try {
       // Test if backend is running
-      const response = await fetch('http://localhost:3001/api/health', {
+      // Use production URL if not on localhost
+      const backendUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3001' 
+        : 'https://wavesight-bot-backend.onrender.com';
+      
+      const response = await fetch(`${backendUrl}/api/health`, {
         method: 'GET',
         timeout: 3000
       });
@@ -669,7 +674,11 @@ window.startBot = async function startBot() {
   
   try {
     // First check if backend is available
-    const healthCheck = await fetch('http://localhost:3001/api/health', {
+    const backendUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001' 
+      : 'https://wavesight-bot-backend.onrender.com';
+    
+    const healthCheck = await fetch(`${backendUrl}/api/health`, {
       method: 'GET'
     }).catch(err => {
       console.error('Health check failed:', err);
