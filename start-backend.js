@@ -1,11 +1,8 @@
 /**
- * Bot Backend Server Entry Point for Production
- * This ensures the bot backend runs on the correct port
+ * Unified Server Entry Point for Production
+ * This runs the unified WaveSight server with dashboard and bot backend
  */
 
-// Set the port to use Render's PORT or default to 3001
-process.env.PORT = process.env.PORT || '3001';
-
-// Run the bot backend server
-console.log('Starting bot backend server on port:', process.env.PORT);
-require('./dashboard/backend/server.js');
+// Run the unified server
+console.log('Starting WaveSight unified server on port:', process.env.PORT || 3000);
+require('./unified-server.js');
