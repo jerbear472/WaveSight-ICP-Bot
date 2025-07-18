@@ -71,7 +71,12 @@ class InstagramBotSimple extends BotBase {
       
       // Wait for navigation
       this.logger.info('Waiting for login to complete');
-      await this.sleep(5000);
+      await this.sleep(2000);
+      
+      // Handle save password popup
+      await this.handleSavePasswordPopup();
+      
+      await this.sleep(3000);
       
       // Take screenshot after login
       await this.screenshot('after-login');
@@ -110,6 +115,41 @@ class InstagramBotSimple extends BotBase {
       this.logger.error('Login failed:', error);
       await this.screenshot('error-state');
       throw error;
+    }
+  }
+  
+  async handleSavePasswordPopup() {
+    try {
+      this.logger.info('Checking for save password popup');
+      
+      // Look for "Save Your Login Info?" popup
+      // Instagram shows this with "Save Info" and "Not Now" buttons
+      const notNowButtons = await this.page.$$('button');
+      
+      for (const button of notNowButtons) {
+        const buttonText = await button.innerText().catch(() => '');
+        if (buttonText.toLowerCase().includes('not now')) {
+          this.logger.info('Found "Not Now" button, clicking it');
+          await button.click();
+          await this.sleep(1000);
+          break;
+        }
+      }
+      
+      // Also check for the div-based button structure
+      const divButtons = await this.page.$$('div[role="button"]');
+      for (const div of divButtons) {
+        const text = await div.innerText().catch(() => '');
+        if (text.toLowerCase().includes('not now')) {
+          this.logger.info('Found "Not Now" div button, clicking it');
+          await div.click();
+          await this.sleep(1000);
+          break;
+        }
+      }
+      
+    } catch (error) {
+      this.logger.debug('Error handling save password popup:', error);
     }
   }
   

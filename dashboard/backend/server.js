@@ -15,6 +15,7 @@ const InstagramBot = require('./bots/instagram-bot');
 const TikTokBot = require('./bots/tiktok-bot');
 const BotSessionManager = require('./services/bot-session-manager');
 const BotEngineConnector = require('./services/bot-engine-connector');
+const path = require('path');
 
 // Initialize Express app
 const app = express();
@@ -29,6 +30,9 @@ const io = new Server(server, {
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the root directory (for verify-bot-system.html)
+app.use(express.static(path.join(__dirname, '../../')));
 
 // Initialize Supabase
 const supabase = createClient(
