@@ -271,11 +271,11 @@ class InstagramBotSimple extends BotBase {
             });
             
             // Emit content discovered event for database storage
-            this.emit('content-discovered', {
+            const contentData = {
               contentId: postData.contentId,
               platform: 'instagram',
               contentType: postData.contentType,
-              creatorUsername: postData.creatorUsername,
+              creator: postData.creatorUsername,  // DataRecorder expects 'creator' not 'creatorUsername'
               creatorHandle: postData.creatorHandle,
               caption: postData.caption,
               hashtags: postData.hashtags,
@@ -286,7 +286,9 @@ class InstagramBotSimple extends BotBase {
               saves: postData.metrics.saves,
               url: await this.page.url(),
               timestamp: new Date().toISOString()
-            });
+            };
+            
+            this.emit('content-discovered', contentData);
             
             this.logger.info('Logged post:', {
               creator: postData.creatorUsername,
