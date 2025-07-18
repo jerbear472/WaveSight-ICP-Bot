@@ -68,7 +68,8 @@ class BotEngineConnector {
         profileType,
         platform,
         duration: duration || 300000,
-        credentials
+        credentials,
+        browser: sessionData.browser || 'chrome' // Allow browser selection
       });
 
       // Track the session
@@ -239,6 +240,17 @@ class BotEngineConnector {
 
   async stopSession(sessionId) {
     try {
+      console.log(`🛑 stopSession called with ID: ${sessionId}`);
+      
+      // If no sessionId, try to stop ALL active bots
+      if (!sessionId) {
+        console.log('⚠️ No session ID provided, stopping all active bots...');
+        for (const [id, session] of this.activeSessions) {
+          await this.stopSession(id);
+        }
+        return;
+      }
+      
       const session = this.activeSessions.get(sessionId);
       if (!session) {
         console.warn(`⚠️ Session ${sessionId} not found for stopping`);
@@ -263,18 +275,29 @@ class BotEngineConnector {
             console.log(`🛑 Setting isActive to false for immediate stop`);
             botInfo.bot.isActive = false; // This will break the loop immediately
             
-            // Force immediate cleanup with a small delay to ensure the loop exits
-            setTimeout(async () => {
-              try {
-                console.log(`🧹 Cleaning up bot resources and closing browser...`);
-                if (botInfo.bot.cleanup && typeof botInfo.bot.cleanup === 'function') {
-                  await botInfo.bot.cleanup();
-                }
-                console.log(`✅ Bot cleanup completed`);
-              } catch (cleanupError) {
-                console.error(`⚠️ Error during cleanup:`, cleanupError);
+            // Emit immediate status update
+            if (session.socket) {
+              session.socket.emit('bot-stopped', { 
+                sessionId,
+                message: 'Bot stopped by user'
+              });
+              session.socket.emit('bot-status', { 
+                sessionId,
+                status: 'stopped',
+                message: 'Bot stopped'
+              });
+            }
+            
+            // Force immediate cleanup
+            try {
+              console.log(`🧹 Cleaning up bot resources immediately...`);
+              if (botInfo.bot.cleanup && typeof botInfo.bot.cleanup === 'function') {
+                await botInfo.bot.cleanup();
               }
-            }, 100);
+              console.log(`✅ Bot cleanup completed`);
+            } catch (cleanupError) {
+              console.error(`⚠️ Error during cleanup:`, cleanupError);
+            }
           }
           
           // Remove from active bots immediately

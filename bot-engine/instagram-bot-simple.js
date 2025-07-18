@@ -1,0 +1,372 @@
+/**
+ * Simplified Instagram Bot for Testing
+ * Focus on getting login working first
+ */
+
+const BotBase = require('./bot-base');
+
+class InstagramBotSimple extends BotBase {
+  constructor(icpProfile, config = {}) {
+    super(icpProfile, {
+      ...config,
+      platform: 'instagram'
+    });
+  }
+
+  async navigateAndLogin() {
+    try {
+      this.emit('status', {
+        status: 'starting',
+        message: 'Starting Instagram bot...'
+      });
+
+      // Get credentials
+      const credentials = this.getCredentials();
+      if (!credentials || !credentials.username || !credentials.password) {
+        throw new Error('Instagram credentials not configured');
+      }
+
+      this.logger.info('Starting simple Instagram login', { username: credentials.username });
+      
+      // Clear cookies and go directly to login page
+      await this.page.context().clearCookies();
+      
+      // Navigate directly to Instagram login
+      this.logger.info('Navigating to Instagram login page');
+      await this.page.goto('https://www.instagram.com/accounts/login/', { 
+        waitUntil: 'networkidle',
+        timeout: 30000 
+      });
+      
+      // Wait for page to load
+      await this.sleep(3000);
+      
+      // Take screenshot
+      await this.screenshot('login-page');
+      
+      // Wait for and fill username
+      this.logger.info('Waiting for username field');
+      await this.page.waitForSelector('input[name="username"]', { timeout: 10000 });
+      
+      this.logger.info('Filling username');
+      await this.page.fill('input[name="username"]', credentials.username);
+      await this.sleep(1000);
+      
+      // Fill password
+      this.logger.info('Filling password');
+      await this.page.fill('input[name="password"]', credentials.password);
+      await this.sleep(1000);
+      
+      // Take screenshot before submitting
+      await this.screenshot('before-submit');
+      
+      // Click login button
+      this.logger.info('Clicking login button');
+      await this.page.click('button[type="submit"]');
+      
+      this.emit('status', {
+        status: 'logging_in',
+        message: 'Submitted login form'
+      });
+      
+      // Wait for navigation
+      this.logger.info('Waiting for login to complete');
+      await this.sleep(5000);
+      
+      // Take screenshot after login
+      await this.screenshot('after-login');
+      
+      // Check current URL
+      const currentUrl = this.page.url();
+      this.logger.info('Current URL after login:', currentUrl);
+      
+      // Check if we have any feed content
+      const hasFeed = await this.page.evaluate(() => {
+        return document.querySelector('article') !== null || 
+               document.querySelector('main[role="main"]') !== null;
+      });
+      
+      if (hasFeed) {
+        this.logger.info('Login successful - feed detected');
+        this.emit('status', {
+          status: 'logged_in',
+          message: 'Successfully logged in'
+        });
+        return true;
+      } else {
+        this.logger.warn('No feed detected after login');
+        
+        // Check for any popups to dismiss
+        await this.dismissAnyPopups();
+        
+        // Try navigating to home
+        await this.page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded' });
+        await this.sleep(3000);
+        
+        return true;
+      }
+      
+    } catch (error) {
+      this.logger.error('Login failed:', error);
+      await this.screenshot('error-state');
+      throw error;
+    }
+  }
+  
+  async dismissAnyPopups() {
+    try {
+      // Try to dismiss common popups
+      const dismissButtons = [
+        'button:has-text("Not Now")',
+        'button:has-text("Cancel")',
+        'button:has-text("Skip")',
+        'button[aria-label="Close"]',
+        'svg[aria-label="Close"]'
+      ];
+      
+      for (const selector of dismissButtons) {
+        try {
+          const button = await this.page.$(selector);
+          if (button && await button.isVisible()) {
+            await button.click();
+            this.logger.info(`Dismissed popup with: ${selector}`);
+            await this.sleep(1000);
+          }
+        } catch (e) {
+          // Continue trying other selectors
+        }
+      }
+    } catch (error) {
+      this.logger.debug('Error dismissing popups:', error);
+    }
+  }
+  
+  async scrollFeed(duration = 60000) {
+    const startTime = Date.now();
+    const viewedPosts = new Set();
+    
+    this.emit('status', {
+      status: 'scrolling',
+      message: 'Started scrolling feed'
+    });
+    
+    this.logger.info('Starting to scroll feed');
+    
+    while (Date.now() - startTime < duration && this.isActive) {
+      try {
+        // Get all visible posts
+        const posts = await this.page.$$('article');
+        this.logger.info(`Visible posts: ${posts.length}`);
+        
+        // Process each post
+        for (const post of posts) {
+          try {
+            // Extract post data
+            const postData = await this.extractPostData(post);
+            
+            // Skip if already viewed
+            if (viewedPosts.has(postData.contentId)) continue;
+            viewedPosts.add(postData.contentId);
+            
+            // Log the impression
+            const impression = await this.logImpression({
+              ...postData,
+              platform: 'instagram',
+              viewDuration: 3000 // Default 3 seconds
+            });
+            
+            this.logger.info('Logged post:', {
+              creator: postData.creatorUsername,
+              handle: postData.creatorHandle,
+              likes: postData.metrics.likes,
+              comments: postData.metrics.comments,
+              caption: postData.caption.substring(0, 50) + '...'
+            });
+            
+          } catch (error) {
+            this.logger.warn('Error processing post:', error);
+          }
+        }
+        
+        // Scroll down
+        await this.page.evaluate(() => {
+          window.scrollBy(0, 500);
+        });
+        
+        // Wait before next scroll
+        await this.sleep(2000);
+        
+      } catch (error) {
+        this.logger.error('Error during scroll:', error);
+      }
+    }
+    
+    this.logger.info(`Scrolling completed. Viewed ${viewedPosts.size} posts`);
+    this.emit('status', {
+      status: 'completed',
+      message: `Scrolling completed. Viewed ${viewedPosts.size} posts`
+    });
+  }
+  
+  async extractPostData(postElement) {
+    const data = {
+      contentId: '',
+      contentType: 'post',
+      creatorUsername: '',
+      creatorHandle: '',
+      caption: '',
+      hashtags: [],
+      thumbnailUrl: '',
+      metrics: {
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        saves: 0
+      }
+    };
+    
+    try {
+      // Extract post ID
+      data.contentId = await this.extractPostId(postElement);
+      
+      // Extract creator username
+      const usernameElement = await postElement.$('header a[role="link"] span');
+      if (usernameElement) {
+        data.creatorUsername = await usernameElement.innerText();
+      }
+      
+      // Also try to get the @ handle if different
+      const handleElement = await postElement.$('header a[role="link"]');
+      if (handleElement) {
+        const href = await handleElement.getAttribute('href');
+        if (href) {
+          // Extract handle from URL like /username/
+          const match = href.match(/\/([^\/]+)\/?$/);
+          if (match) {
+            data.creatorHandle = match[1];
+          }
+        }
+      }
+      
+      // If no separate handle found, use username
+      if (!data.creatorHandle && data.creatorUsername) {
+        data.creatorHandle = data.creatorUsername;
+      }
+      
+      // Extract caption and hashtags
+      const captionElements = await postElement.$$('h1');
+      if (captionElements.length > 0) {
+        data.caption = await captionElements[0].innerText();
+        // Extract hashtags from caption
+        data.hashtags = this.extractHashtags(data.caption);
+      }
+      
+      // Extract thumbnail URL
+      const imgElement = await postElement.$('img[srcset]');
+      if (imgElement) {
+        data.thumbnailUrl = await imgElement.getAttribute('src');
+      }
+      
+      // Extract metrics - Instagram hides exact counts sometimes
+      // Look for like button and its text
+      const likeSection = await postElement.$('section > div > div');
+      if (likeSection) {
+        const likeText = await likeSection.innerText();
+        if (likeText.includes('like')) {
+          data.metrics.likes = this.parseMetricValue(likeText);
+        }
+      }
+      
+      // Try to find comment count
+      const viewCommentsLink = await postElement.$('a[href*="/comments/"]');
+      if (viewCommentsLink) {
+        const commentText = await viewCommentsLink.innerText();
+        if (commentText.includes('comment')) {
+          data.metrics.comments = this.parseMetricValue(commentText);
+        }
+      }
+      
+    } catch (error) {
+      this.logger.debug('Error extracting post data:', error);
+    }
+    
+    return data;
+  }
+  
+  async extractPostId(postElement) {
+    try {
+      // Try to get from post link
+      const linkElement = await postElement.$('a[href*="/p/"]');
+      if (linkElement) {
+        const href = await linkElement.getAttribute('href');
+        const match = href.match(/\/p\/([^\/]+)/);
+        if (match) return match[1];
+      }
+      
+      // Fallback to timestamp-based ID
+      return `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    } catch (error) {
+      return `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+  }
+  
+  extractHashtags(text) {
+    const hashtagRegex = /#[a-zA-Z0-9_]+/g;
+    const matches = text.match(hashtagRegex);
+    return matches ? matches.map(tag => tag.toLowerCase()) : [];
+  }
+  
+  parseMetricValue(text) {
+    if (!text) return 0;
+    
+    // Remove non-numeric characters except K, M
+    const cleaned = text.replace(/[^0-9KM.,]/gi, '').toUpperCase();
+    
+    if (cleaned.includes('K')) {
+      return Math.floor(parseFloat(cleaned) * 1000);
+    } else if (cleaned.includes('M')) {
+      return Math.floor(parseFloat(cleaned) * 1000000);
+    }
+    
+    return parseInt(cleaned.replace(/,/g, '')) || 0;
+  }
+  
+  getCredentials() {
+    // Check if credentials are directly in config
+    if (this.config.credentials && this.config.credentials.username && this.config.credentials.password) {
+      return this.config.credentials;
+    }
+    
+    // Check environment variables
+    if (process.env.INSTAGRAM_USERNAME && process.env.INSTAGRAM_PASSWORD) {
+      return {
+        username: process.env.INSTAGRAM_USERNAME,
+        password: process.env.INSTAGRAM_PASSWORD
+      };
+    }
+
+    // Default credentials
+    return {
+      username: 'mindmatterlife',
+      password: 'L0ngStr@ngeTr!p'
+    };
+  }
+
+  async start(options = {}) {
+    const { duration = 60000 } = options;
+
+    try {
+      await this.initialize();
+      await this.navigateAndLogin();
+      await this.scrollFeed(duration);
+      return this.getMetrics();
+    } catch (error) {
+      this.logger.error('Bot session failed', { error: error.message });
+      throw error;
+    } finally {
+      await this.cleanup();
+    }
+  }
+}
+
+module.exports = InstagramBotSimple;

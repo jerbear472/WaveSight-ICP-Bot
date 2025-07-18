@@ -141,6 +141,14 @@
                 <label for="duration">Duration (seconds):</label>
                 <input type="number" id="duration" value="30" min="10" max="300">
             </div>
+            
+            <div class="control-group">
+                <label for="browser">Browser:</label>
+                <select id="browser">
+                    <option value="chrome">Chrome</option>
+                    <option value="safari">Safari</option>
+                </select>
+            </div>
         </div>
         
         <div style="margin-bottom: 30px;">
@@ -178,14 +186,23 @@
             socket.on('bot-status', (data) => {
                 addLog(`Bot Status: ${data.status} - ${data.message || ''}`, 'info');
                 
-                if (data.status === 'started') {
-                    currentSession = data.sessionId;
+                // Enable stop button for any running status
+                if (data.status === 'started' || data.status === 'running' || 
+                    data.status === 'scrolling' || data.status === 'logged_in' || 
+                    data.status === 'feed_loaded') {
+                    if (data.sessionId) {
+                        currentSession = data.sessionId;
+                    }
                     document.getElementById('startBtn').disabled = true;
                     document.getElementById('stopBtn').disabled = false;
-                    addLog(`Session started: ${data.sessionId}`, 'success');
+                    
+                    if (data.status === 'started') {
+                        addLog(`Session started: ${data.sessionId}`, 'success');
+                    }
                 }
                 
-                if (data.status === 'stopped' || data.status === 'completed') {
+                if (data.status === 'stopped' || data.status === 'completed' || 
+                    data.status === 'stopping' || data.status === 'error') {
                     currentSession = null;
                     document.getElementById('startBtn').disabled = false;
                     document.getElementById('stopBtn').disabled = true;
@@ -197,8 +214,26 @@
                 addLog(`📱 Content: ${data.username} - ${data.caption?.substring(0, 50)}...`, 'success');
             });
             
+            socket.on('bot-started', (data) => {
+                addLog(`Bot started with session: ${data.sessionId}`, 'success');
+                currentSession = data.sessionId;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+            });
+            
+            socket.on('bot-stopped', (data) => {
+                addLog(`Bot stopped`, 'info');
+                currentSession = null;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            });
+            
             socket.on('bot-error', (error) => {
                 addLog(`Error: ${error.message}`, 'error');
+                // Reset buttons on error
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                currentSession = null;
             });
             
             socket.on('session-complete', (data) => {
@@ -226,13 +261,15 @@
             const platform = document.getElementById('platform').value;
             const profileType = document.getElementById('profileType').value;
             const duration = parseInt(document.getElementById('duration').value);
+            const browser = document.getElementById('browser').value;
             
-            addLog(`Starting ${platform} bot for ${profileType} (${duration}s)...`, 'info');
+            addLog(`Starting ${platform} bot for ${profileType} (${duration}s) in ${browser}...`, 'info');
             
             socket.emit('start-bot', {
                 platform,
                 profileType,
-                duration
+                duration: duration * 1000,  // Convert seconds to milliseconds
+                browser
             });
         }
         

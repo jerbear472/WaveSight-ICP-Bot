@@ -439,16 +439,63 @@ class TikTokBot extends BotBase {
         const startY = viewportSize.height * 0.8;
         const endY = viewportSize.height * 0.2;
         
+        // Natural swipe with easing
         await this.page.mouse.move(viewportSize.width / 2, startY);
         await this.page.mouse.down();
-        await this.page.mouse.move(viewportSize.width / 2, endY, { steps: 10 });
+        
+        // Smooth swipe motion
+        const steps = 20;
+        for (let i = 0; i <= steps; i++) {
+          const progress = i / steps;
+          const easedProgress = this.easeInOutCubic(progress);
+          const currentY = startY + (endY - startY) * easedProgress;
+          
+          await this.page.mouse.move(viewportSize.width / 2, currentY);
+          await this.sleep(10); // Small delay between steps
+        }
+        
         await this.page.mouse.up();
       } else {
-        // Mouse wheel for desktop
-        await this.page.mouse.wheel(0, 800);
+        // Natural scroll for desktop using our smooth scroll method
+        // TikTok uses full viewport scrolls to navigate videos
+        const viewportHeight = await this.page.evaluate(() => window.innerHeight);
+        
+        // Use smooth scrolling for TikTok video transitions
+        await this.page.evaluate(async (scrollHeight) => {
+          const scrollElement = document.scrollingElement || document.body;
+          const startPosition = scrollElement.scrollTop;
+          const targetPosition = startPosition + scrollHeight;
+          const duration = 600 + Math.random() * 200; // 600-800ms for video transitions
+          const startTime = performance.now();
+          
+          // Use easeInOutCubic for smooth video transitions
+          const easeInOutCubic = (t) => {
+            return t < 0.5 
+              ? 4 * t * t * t 
+              : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          };
+          
+          const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeInOutCubic(progress);
+            
+            const currentPosition = startPosition + (targetPosition - startPosition) * easedProgress;
+            scrollElement.scrollTop = currentPosition;
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            }
+          };
+          
+          requestAnimationFrame(animate);
+          
+          // Wait for scroll to complete
+          await new Promise(resolve => setTimeout(resolve, duration + 100));
+        }, viewportHeight);
       }
       
-      await this.sleep(1000); // Wait for animation
+      await this.sleep(300 + Math.random() * 500); // Natural pause after scroll
       this.currentVideoIndex++;
     } catch (error) {
       this.logger.error('Error scrolling to next video', { error: error.message });

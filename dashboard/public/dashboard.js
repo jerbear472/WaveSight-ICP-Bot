@@ -649,7 +649,8 @@ function refreshData() {
   dashboard.refreshData();
 }
 
-async function startBot() {
+// Make startBot globally accessible
+window.startBot = async function startBot() {
   const profileType = document.getElementById('profileType').value;
   const platform = document.getElementById('platform').value;
   const duration = parseInt(document.getElementById('duration').value);
@@ -738,8 +739,18 @@ async function startBot() {
       
       // Enable stop button, disable start button
       const stopButton = document.querySelector('.stop-bot-btn');
-      startButton.disabled = true;
-      stopButton.disabled = false;
+      if (stopButton) {
+        console.log('Enabling stop button...');
+        stopButton.disabled = false;
+        stopButton.removeAttribute('disabled');
+        // Force update
+        stopButton.innerHTML = 'Stop Bot Session';
+        stopButton.onclick = function() { stopBot(); };
+        console.log('Stop button should now be enabled:', stopButton.disabled);
+      }
+      if (startButton) {
+        startButton.disabled = true;
+      }
       
     } else {
       throw new Error('Bot client not loaded. Include bot-client.js script.');
@@ -763,46 +774,63 @@ async function startBot() {
   }
 }
 
-async function stopBot() {
-  console.log('Stopping bot session:', currentBotSession);
+// Make stopBot globally accessible
+window.stopBot = async function stopBot() {
+  console.log('stopBot called! Session:', currentBotSession);
   
   const startButton = document.querySelector('.start-bot-btn');
   const stopButton = document.querySelector('.stop-bot-btn');
   const statusIndicator = document.querySelector('.status-indicator');
   const statusText = document.querySelector('.status-text');
   
+  // Immediately show stopping status
+  if (stopButton) {
+    stopButton.disabled = true;
+    stopButton.textContent = 'Stopping...';
+  }
+  if (statusText) {
+    statusText.textContent = 'Stopping bot...';
+  }
+  
   try {
     if (!currentBotSession) {
       console.error('No active session to stop');
-      dashboard.showNotification('No active bot session to stop', 'error');
-      return;
-    }
-    
-    // Disable stop button while stopping
-    stopButton.disabled = true;
-    stopButton.textContent = 'Stopping...';
-    
-    // Stop the bot
-    if (window.botClient) {
-      await window.botClient.stopBot(currentBotSession);
-      dashboard.showNotification('Bot session stopped', 'success');
+      // Still try to stop any active bot
+      if (window.botClient) {
+        await window.botClient.stopBot(null);
+      }
+      dashboard.showNotification('Stopping bot...', 'info');
+    } else {
+      // Stop the bot with session ID
+      if (window.botClient) {
+        console.log('Calling stopBot with session:', currentBotSession);
+        await window.botClient.stopBot(currentBotSession);
+        dashboard.showNotification('Bot session stopped', 'success');
+      }
     }
     
     // Reset UI
     currentBotSession = null;
-    statusIndicator.style.background = '#64748b';
-    statusText.textContent = 'Bot Stopped';
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    stopButton.textContent = 'Stop Bot Session';
+    if (statusIndicator) statusIndicator.style.background = '#64748b';
+    if (statusText) statusText.textContent = 'Bot Stopped';
+    if (startButton) startButton.disabled = false;
+    if (stopButton) {
+      stopButton.disabled = true;
+      stopButton.textContent = 'Stop Bot Session';
+    }
     
   } catch (error) {
     console.error('Failed to stop bot:', error);
-    dashboard.showNotification('Failed to stop bot: ' + error.message, 'error');
+    dashboard.showNotification('Stopping bot...', 'info');
     
     // Reset UI anyway
-    stopButton.disabled = false;
-    stopButton.textContent = 'Stop Bot Session';
+    currentBotSession = null;
+    if (startButton) startButton.disabled = false;
+    if (stopButton) {
+      stopButton.disabled = true;
+      stopButton.textContent = 'Stop Bot Session';
+    }
+    if (statusText) statusText.textContent = 'Bot Stopped';
   }
 }
 
@@ -833,4 +861,53 @@ async function exportData(type) {
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.dashboard = new ICPDashboard();
+  
+  // Initialize bot client if available
+  if (window.botClient) {
+    console.log('Initializing bot client event handlers...');
+    
+    // Set up status update handler
+    window.botClient.onStatusUpdate((status, data) => {
+      console.log('Bot status update:', status, data);
+      const stopButton = document.querySelector('.stop-bot-btn');
+      const startButton = document.querySelector('.start-bot-btn');
+      const statusIndicator = document.querySelector('.status-indicator');
+      const statusText = document.querySelector('.status-text');
+      
+      // Update UI based on status
+      console.log('Status update received:', status);
+      
+      if (status === 'stopped' || status === 'idle' || status === 'error' || status === 'session-complete') {
+        // Bot is NOT running - disable stop button
+        if (stopButton) {
+          stopButton.disabled = true;
+        }
+        if (startButton) {
+          startButton.disabled = false;
+        }
+        if (status === 'error') {
+          if (statusText) statusText.textContent = 'Error';
+          if (statusIndicator) statusIndicator.style.background = '#ef4444';
+          currentBotSession = null;
+        } else {
+          if (statusText) statusText.textContent = 'Bot Stopped';
+          if (statusIndicator) statusIndicator.style.background = '#64748b';
+        }
+      } else {
+        // Bot IS running - enable stop button for ALL other statuses
+        if (stopButton) {
+          stopButton.disabled = false;
+          console.log('Stop button enabled for status:', status);
+        }
+        if (startButton) {
+          startButton.disabled = true;
+        }
+        if (statusText) statusText.textContent = 'Bot Running';
+        if (statusIndicator) statusIndicator.style.background = '#10b981';
+      }
+    });
+    
+    // Connect to backend
+    window.botClient.connect();
+  }
 });

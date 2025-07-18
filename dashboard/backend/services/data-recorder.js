@@ -19,6 +19,7 @@ class DataRecorder {
                 platform: content.platform,
                 content_id: content.contentId,
                 creator_username: content.creator,
+                creator_handle: content.creatorHandle || content.creator,
                 content_type: content.contentType || 'video',
                 caption: content.caption,
                 hashtags: content.hashtags || [],
@@ -70,6 +71,7 @@ class DataRecorder {
         try {
             const profileData = {
                 username: content.creator,
+                handle: content.creatorHandle || content.creator,
                 platform: content.platform,
                 display_name: content.creatorDisplayName || content.creator,
                 bio: content.creatorBio || null,

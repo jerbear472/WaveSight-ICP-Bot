@@ -7,7 +7,7 @@ const cron = require('node-cron');
 const { v4: uuidv4 } = require('uuid');
 const winston = require('winston');
 const ICPProfileGenerator = require('./icp-profile-generator');
-const InstagramBot = require('./instagram-bot');
+const InstagramBot = require('./instagram-bot-simple'); // Using simplified version for testing
 const TikTokBot = require('./tiktok-bot');
 const DataLogger = require('../data-logger/supabase-logger');
 const EventEmitter = require('events');
@@ -219,7 +219,8 @@ class BotOrchestrator extends EventEmitter {
         proxyUrl: null, // Disable proxy for local development
         credentials: session.credentials,
         slowMo: envConfig.botConfig.slowMo,
-        viewport: envConfig.botConfig.viewport
+        viewport: envConfig.botConfig.viewport,
+        browser: session.browser || 'chrome' // Pass browser preference
       };
       
       this.logger.info('Creating bot with config', {
@@ -501,7 +502,8 @@ class BotOrchestrator extends EventEmitter {
       profileType = 'gen_z_tech_enthusiast',
       platform = 'instagram',
       duration = this.config.sessionDuration,
-      credentials
+      credentials,
+      browser = 'chrome'
     } = options;
 
     this.logger.info('Starting manual bot session', options);
@@ -516,7 +518,8 @@ class BotOrchestrator extends EventEmitter {
       platform,
       scheduledTime: new Date(),
       manual: true,
-      credentials
+      credentials,
+      browser
     };
 
     // Run immediately

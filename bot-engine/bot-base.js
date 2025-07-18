@@ -3,7 +3,8 @@
  * Core functionality for all platform-specific bots
  */
 
-const { chromium } = require('playwright');
+const { chromium, webkit } = require('playwright');
+// Note: We'll use webkit for Safari or chromium for Chrome
 const winston = require('winston');
 const { v4: uuidv4 } = require('uuid');
 const UserAgent = require('user-agents');
@@ -22,7 +23,10 @@ try {
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--window-size=1920,1080',
+        '--start-maximized',
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       ],
       viewport: { width: 1280, height: 720, deviceScaleFactor: 1 },
       slowMo: 0
@@ -82,18 +86,47 @@ class BotBase extends EventEmitter {
     try {
       this.logger.info('Initializing bot', { 
         sessionId: this.sessionId,
-        profile: this.icpProfile.profileName 
+        profile: this.icpProfile.profileName,
+        browser: this.config.browser || 'chrome'
       });
 
       // Launch browser with anti-detection measures
       const launchOptions = {
-        headless: this.config.headless !== undefined ? this.config.headless : envConfig.botConfig.headless,
+        headless: false, // Force visible browser to ensure desktop mode
         slowMo: this.config.slowMo || envConfig.botConfig.slowMo,
         args: [
-          ...envConfig.botConfig.browserArgs,
-          '--disable-blink-features=AutomationControlled'
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-blink-features=AutomationControlled',
+          '--window-size=1920,1080',
+          '--start-maximized',
+          '--force-device-scale-factor=1',
+          '--high-dpi-support=1',
+          '--disable-features=IsolateOrigins,site-per-process',
+          '--flag-switches-begin',
+          '--disable-site-isolation-trials',
+          '--flag-switches-end'
         ]
       };
+      
+      // Check if we should use Safari
+      const useSafari = this.config.browser === 'safari' || this.config.useSafari;
+      
+      this.logger.info('Browser selection', {
+        configBrowser: this.config.browser,
+        useSafari: useSafari,
+        willUseBrowser: useSafari ? 'Safari' : 'Chrome'
+      });
+      
+      if (useSafari) {
+        // Remove Chrome-specific args for Safari
+        launchOptions.args = [];
+      } else {
+        // Use Chrome instead of Chromium for better compatibility
+        launchOptions.channel = 'chrome'; // This tells Playwright to use Chrome
+      }
 
       if (this.config.proxyUrl) {
         launchOptions.proxy = {
@@ -103,46 +136,68 @@ class BotBase extends EventEmitter {
         };
       }
 
-      this.browser = await chromium.launch(launchOptions);
+      // Launch Safari or Chrome based on config
+      if (useSafari) {
+        this.logger.info('Launching Safari browser');
+        this.browser = await webkit.launch(launchOptions);
+      } else {
+        this.logger.info('Launching Chrome browser');
+        this.browser = await chromium.launch(launchOptions);
+      }
 
-      // Create context with device emulation
-      const deviceType = this.icpProfile.deviceType || 'desktop';
-      const isMobile = deviceType.includes('mobile');
+      // FORCE DESKTOP MODE - ignore profile settings
+      const deviceType = 'desktop'; // Always use desktop
+      const isMobile = false; // Force desktop mode
       
-      const userAgentString = isMobile
-        ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
-        : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36';
+      // Use appropriate user agent based on browser
+      const userAgentString = useSafari 
+        ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
+        : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+      // Force larger desktop viewport to ensure desktop site
+      const desktopViewport = { width: 1920, height: 1080 };
 
       this.context = await this.browser.newContext({
         userAgent: userAgentString,
-        viewport: this.config.viewport || this.icpProfile.deviceInfo?.screenSize || envConfig.botConfig.viewport,
-        deviceScaleFactor: isMobile ? 2 : 1,
-        hasTouch: isMobile,
-        isMobile: isMobile,
-        locale: this.icpProfile.language || 'en-US',
-        timezoneId: this.icpProfile.timezone || 'America/New_York',
+        viewport: desktopViewport, // Always use desktop viewport
+        screen: { width: 1920, height: 1080 }, // Set screen size
+        deviceScaleFactor: 1, // Desktop scale
+        hasTouch: false, // No touch for desktop
+        isMobile: false, // Force desktop
+        locale: 'en-US',
+        timezoneId: 'America/New_York',
         permissions: ['geolocation'],
-        geolocation: this.generateGeolocation()
+        geolocation: this.generateGeolocation(),
+        // Additional headers to force desktop
+        extraHTTPHeaders: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'sec-ch-ua': useSafari ? '' : '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+          'sec-ch-ua-mobile': '?0', // Explicitly not mobile
+          'sec-ch-ua-platform': '"macOS"'
+        }
       });
 
-      // Add stealth scripts
-      await this.context.addInitScript(() => {
-        // Override navigator properties
-        Object.defineProperty(navigator, 'webdriver', { get: () => false });
-        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-        
-        // Chrome specific
-        window.chrome = { runtime: {} };
-        
-        // Permission API
-        const originalQuery = window.navigator.permissions.query;
-        window.navigator.permissions.query = (parameters) => (
-          parameters.name === 'notifications' ?
-            Promise.resolve({ state: Notification.permission }) :
-            originalQuery(parameters)
-        );
-      });
+      // Add stealth scripts (only for Chrome, Safari doesn't need these)
+      if (!useSafari) {
+        await this.context.addInitScript(() => {
+          // Override navigator properties
+          Object.defineProperty(navigator, 'webdriver', { get: () => false });
+          Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+          Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+          
+          // Chrome specific
+          window.chrome = { runtime: {} };
+          
+          // Permission API
+          const originalQuery = window.navigator.permissions.query;
+          window.navigator.permissions.query = (parameters) => (
+            parameters.name === 'notifications' ?
+              Promise.resolve({ state: Notification.permission }) :
+              originalQuery(parameters)
+          );
+        });
+      }
 
       this.page = await this.context.newPage();
       this.isActive = true;
@@ -221,13 +276,40 @@ class BotBase extends EventEmitter {
   async humanScroll(distance = 300) {
     const variance = this.humanBehavior.scrollVariance;
     const actualDistance = distance * (1 + (Math.random() - 0.5) * variance);
-    const steps = 10 + Math.floor(Math.random() * 10);
-    const stepSize = actualDistance / steps;
-
-    for (let i = 0; i < steps; i++) {
-      await this.page.mouse.wheel(0, stepSize);
-      await this.sleep(20 + Math.random() * 50);
-    }
+    
+    // Use smooth scrolling via JavaScript for more natural behavior
+    await this.page.evaluate(async (scrollDistance) => {
+      // Smooth scroll implementation
+      const scrollElement = document.scrollingElement || document.body;
+      const startPosition = scrollElement.scrollTop;
+      const targetPosition = startPosition + scrollDistance;
+      const duration = 200 + Math.random() * 100; // 200-300ms for fast smooth scroll
+      const startTime = performance.now();
+      
+      // Easing function for natural deceleration
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      
+      const animateScroll = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+        
+        const currentPosition = startPosition + (targetPosition - startPosition) * easedProgress;
+        scrollElement.scrollTop = currentPosition;
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+      
+      requestAnimationFrame(animateScroll);
+      
+      // Wait for scroll to complete
+      await new Promise(resolve => setTimeout(resolve, duration + 100));
+    }, actualDistance);
+    
+    // Add a small random pause after scrolling
+    await this.sleep(100 + Math.random() * 200);
   }
 
   /**
@@ -317,6 +399,7 @@ class BotBase extends EventEmitter {
         contentType: contentData.contentType,
         contentId: contentData.contentId,
         creator: contentData.creatorUsername,
+        creatorHandle: contentData.creatorHandle || contentData.creatorUsername,
         caption: contentData.caption,
         hashtags: contentData.hashtags,
         music: contentData.music || 'Original audio',
@@ -324,6 +407,8 @@ class BotBase extends EventEmitter {
         likes: contentData.metrics?.likes || 0,
         comments: contentData.metrics?.comments || 0,
         shares: contentData.metrics?.shares || 0,
+        saves: contentData.metrics?.saves || 0,
+        thumbnailUrl: contentData.thumbnailUrl || null,
         isSponsored: contentData.isSponsored,
         timestamp: impression.impressionTimestamp,
         dwellTime: Math.round(contentData.viewDuration / 1000) || 3
@@ -361,14 +446,23 @@ class BotBase extends EventEmitter {
   }
 
   /**
-   * Utility sleep function
+   * Utility sleep function - now interruptible
    */
-  sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  async sleep(ms) {
+    const interval = 100; // Check every 100ms
+    const steps = Math.ceil(ms / interval);
+    
+    for (let i = 0; i < steps; i++) {
+      if (!this.isActive) {
+        this.logger.debug('Sleep interrupted - bot stopped');
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, Math.min(interval, ms - (i * interval))));
+    }
   }
 
   /**
-   * Random sleep within range
+   * Random sleep within range - now interruptible
    */
   async randomSleep(min, max) {
     const duration = min + Math.random() * (max - min);
@@ -392,6 +486,12 @@ class BotBase extends EventEmitter {
     try {
       this.isActive = false;
       
+      // Emit immediate stop status
+      this.emit('status', {
+        status: 'stopping',
+        message: 'Bot is stopping...'
+      });
+      
       if (this.page) await this.page.close();
       if (this.context) await this.context.close();
       if (this.browser) await this.browser.close();
@@ -400,6 +500,12 @@ class BotBase extends EventEmitter {
         sessionId: this.sessionId,
         totalImpressions: this.impressions.length,
         totalEngagements: this.engagements.length
+      });
+      
+      // Emit final stopped status
+      this.emit('status', {
+        status: 'stopped',
+        message: 'Bot stopped successfully'
       });
     } catch (error) {
       this.logger.error('Error during cleanup', { error: error.message });

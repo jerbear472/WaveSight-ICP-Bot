@@ -47,16 +47,17 @@ io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
   socket.on('start-bot', async (data) => {
-    const { platform, profileType, duration } = data;
+    const { platform, profileType, duration, browser } = data;
     
     try {
-      console.log(`🚀 Starting bot via advanced bot-engine: ${platform} - ${profileType}`);
+      console.log(`🚀 Starting bot via advanced bot-engine: ${platform} - ${profileType} - ${browser || 'chrome'}`);
       
       // Use advanced bot-engine system
       const sessionId = await botEngineConnector.startSession({
         platform,
         profileType,
-        duration
+        duration,
+        browser
       }, socket);
       
       console.log(`✅ Bot-engine session started: ${sessionId}`);

@@ -30,6 +30,9 @@ module.exports = {
       '--disable-web-security',
       '--disable-features=IsolateOrigins,site-per-process',
       '--disable-site-isolation-trials',
+      '--window-size=1920,1080',
+      '--start-maximized',
+      '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       ...(isRender ? [
         '--single-process',
         '--no-zygote',
@@ -38,10 +41,10 @@ module.exports = {
       ] : [])
     ],
     
-    // Viewport settings
+    // Viewport settings - Force desktop
     viewport: {
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       deviceScaleFactor: 1
     },
     
