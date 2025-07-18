@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAVESITE - Surf Intelligence Platform</title>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@400;500;600;700&family=Poppins:wght@200;300;400;500&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #22d3ee;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-lighter: #1e293b;
+            --dark-card: #1a2332;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(148, 163, 184, 0.1);
+            --glass: rgba(255, 255, 255, 0.02);
+            --glass-hover: rgba(255, 255, 255, 0.05);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+            --gradient-mesh: radial-gradient(at 20% 80%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                             radial-gradient(at 80% 20%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+                             radial-gradient(at 40% 40%, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background effects */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-mesh);
+            opacity: 0.4;
+            z-index: -1;
+        }
+
+        /* Animated background orbs */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: float 20s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        .bg-orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -300px;
+            left: -300px;
+            animation-delay: 0s;
+        }
+
+        .bg-orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: 5s;
+        }
+
+        .bg-orb-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.9); }
+            75% { transform: translate(30px, 50px) scale(1.05); }
+        }
+
+        /* Modern header with glass effect */
+        .header {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo {
+            height: 48px;
+            width: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .logo:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.25);
+        }
+
+        .title {
+            font-size: 2.25rem;
+            font-weight: 400;
+            letter-spacing: 0.08em;
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            position: relative;
+            font-family: 'Syne', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-style: normal;
+            animation: shimmer 3s ease-in-out infinite;
+            transition: all 0.3s ease;
+        }
+
+        .title:hover {
+            transform: scale(1.02);
+            letter-spacing: 0.12em;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Connection status pill */
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .status:hover {
+            background: var(--glass-hover);
+            transform: translateY(-1px);
+        }
+
+        .status-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            position: relative;
+        }
+
+        .status.connected .status-icon {
+            background: var(--success);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Modern card design */
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title .icon {
+            font-size: 1.75rem;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Control panel styling */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .control-input {
+            padding: 0.875rem 1rem;
+            background: var(--dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .control-input:hover {
+            border-color: var(--primary);
+            background: var(--dark-lighter);
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        select.control-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+
+        /* Modern buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Metrics cards with gradient borders */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--dark-card);
+            border-radius: 19px;
+            z-index: -1;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .metric-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: float-icon 3s infinite ease-in-out;
+        }
+
+        @keyframes float-icon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .metric-trend {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: var(--glass);
+            border-radius: 100px;
+        }
+
+        .metric-trend.up {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .metric-trend.down {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Data flow visualization */
+        .data-flow-section {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-flow-container {
+            position: relative;
+            height: 250px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .flow-node {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 1.25rem 1.75rem;
+            background: var(--dark);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .flow-source {
+            left: 40px;
+        }
+
+        .flow-destination {
+            right: 40px;
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(6, 182, 212, 0.1));
+        }
+
+        .data-point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent);
+            animation: moveData 4s linear infinite;
+            z-index: 20;
+        }
+
+        @keyframes moveData {
+            0% {
+                left: 100px;
+                opacity: 0;
+                transform: translateY(-50%) scale(0);
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(-50%) scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: translateY(-50%) scale(1);
+            }
+            100% {
+                left: calc(100% - 140px);
+                opacity: 0;
+                transform: translateY(-50%) scale(0);
+            }
+        }
+
+        /* Data stream modern design */
+        .data-stream-item {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            animation: slideIn 0.5s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .data-stream-item:hover {
+            transform: translateX(8px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+        }
+
+        .data-stream-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .data-stream-item:hover::before {
+            left: 100%;
+        }
+
+        /* Activity log modern terminal style */
+        .log-container {
+            background: #0a0e1a;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            position: relative;
+        }
+
+        .log-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, #0a0e1a, transparent);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .log-entry {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Modern scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--dark-lighter);
+            border-radius: 10px;
+            border: 2px solid var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Countdown timer modern design */
+        .countdown {
+            position: fixed;
+            top: 100px;
+            right: 2rem;
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .countdown.active {
+            display: block;
+            animation: slideInRight 0.5s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .countdown-time {
+            font-size: 2.5rem;
+            font-weight: 900;
+            font-variant-numeric: tabular-nums;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .countdown {
+                top: auto;
+                bottom: 2rem;
+                right: 1rem;
+            }
+
+            .flow-node {
+                font-size: 0.875rem;
+                padding: 1rem;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success checkmark animation */
+        .success-check {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .success-check::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            color: var(--success);
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: checkPop 0.5s ease forwards;
+        }
+
+        @keyframes checkPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* Pulse animation for live indicators */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--danger);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .live-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: livePulse 2s infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background orbs -->
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <img src="logo2.png" alt="WaveSite" class="logo">
+                <h1 class="title">WaveSite</h1>
+            </div>
+            <div class="status disconnected" id="connectionStatus">
+                <div class="status-icon"></div>
+                <span>Disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <span class="icon">🏄</span>
+                    Surf Bot Control Center
+                </h2>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label class="control-label">Platform</label>
+                    <select id="platform" class="control-input">
+                        <option value="instagram">Instagram</option>
+                        <option value="tiktok">TikTok</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Profile Type</label>
+                    <select id="profileType" class="control-input">
+                        <option value="gen-z-tech-enthusiast">Gen Z Tech Enthusiast</option>
+                        <option value="finance-focused-millennial">Finance Focused Millennial</option>
+                        <option value="health-wellness-professional">Health & Wellness Professional</option>
+                        <option value="creative-entrepreneur">Creative Entrepreneur</option>
+                        <option value="parent-family-oriented">Parent & Family Oriented</option>
+                        <option value="fitness-enthusiast">Fitness Enthusiast</option>
+                        <option value="fashion-beauty-lover">Fashion & Beauty Lover</option>
+                        <option value="gamer-esports-fan">Gamer & Esports Fan</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Duration (seconds)</label>
+                    <input type="number" id="duration" class="control-input" value="60" min="10" max="600">
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Browser</label>
+                    <select id="browser" class="control-input">
+                        <option value="chrome">Chrome</option>
+                        <option value="safari">Safari</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" id="startBtn" onclick="startBot()">
+                    <span>▶️</span> Start Surfing
+                </button>
+                <button class="btn btn-danger" id="stopBtn" onclick="stopBot()" disabled>
+                    <span>⏹️</span> Stop
+                </button>
+            </div>
+        </div>
+
+        <!-- Real-time Metrics -->
+        <div id="metricsSection" style="display: none;">
+            <div class="card-header" style="margin-bottom: 1.5rem;">
+                <h2 class="card-title">
+                    <span class="icon">📊</span>
+                    Live Surf Metrics
+                </h2>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card tooltip" data-tooltip="Total posts discovered">
+                    <span class="metric-icon">🌊</span>
+                    <div class="metric-value" id="waveCount">0</div>
+                    <div class="metric-label">Waves Surfed</div>
+                    <div class="metric-trend up" id="waveTrend">↑ 0%</div>
+                </div>
+                
+                <div class="metric-card tooltip" data-tooltip="Posts viewed per minute">
+                    <span class="metric-icon">⚡</span>
+                    <div class="metric-value" id="surfVelocity">0</div>
+                    <div class="metric-label">Waves/Minute</div>
+                    <div class="metric-trend" id="velocityTrend">→ Stable</div>
+                </div>
+                
+                <div class="metric-card tooltip" data-tooltip="Average engagement quality">
+                    <span class="metric-icon">🎯</span>
+                    <div class="metric-value" id="qualityScore">0%</div>
+                    <div class="metric-label">Content Quality</div>
+                    <div class="metric-trend" id="qualityTrend">→ Analyzing</div>
+                </div>
+                
+                <div class="metric-card tooltip" data-tooltip="Human-like behavior score">
+                    <span class="metric-icon">🏄</span>
+                    <div class="metric-value" id="efficiencyRating">0%</div>
+                    <div class="metric-label">Surf Efficiency</div>
+                    <div class="metric-trend" id="efficiencyTrend">→ Calibrating</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Flow Visualization -->
+        <div id="dataFlowSection" class="data-flow-section" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="icon">🔄</span>
+                    Live Data Pipeline
+                </h3>
+                <div class="live-indicator">Live</div>
+            </div>
+            <div class="data-flow-container">
+                <div class="flow-node flow-source">
+                    <span id="flowSourceIcon">📷</span>
+                    <span id="flowSourceText">Instagram</span>
+                </div>
+                <div class="flow-node flow-destination">
+                    <span>💾</span>
+                    <span>Supabase</span>
+                </div>
+                <div id="dataFlowCanvas"></div>
+            </div>
+            <div class="metrics-grid" style="margin-top: 2rem;">
+                <div class="metric-card">
+                    <div class="metric-value" id="postsProcessed">0</div>
+                    <div class="metric-label">Posts Processed</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="dataPoints">0</div>
+                    <div class="metric-label">Data Points</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="supabaseSaved">0</div>
+                    <div class="metric-label">Saved to DB</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Stream -->
+        <div id="dataStreamSection" class="card" style="display: none;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="icon">📊</span>
+                    Real-Time Data Stream
+                </h3>
+                <div style="color: var(--text-secondary);">
+                    <span id="streamCount">0</span> items
+                </div>
+            </div>
+            <div id="dataStreamContainer" style="max-height: 600px; overflow-y: auto;">
+                <!-- Data items will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <span class="icon">📝</span>
+                    Activity Log
+                </h3>
+            </div>
+            <div class="log-container" id="log">
+                <div class="log-entry info">
+                    <span class="log-time" style="color: var(--text-muted);">--:--:--</span>
+                    <span class="log-message">Waiting to connect to backend...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Countdown Timer -->
+    <div class="countdown" id="countdown">
+        <div class="countdown-label" style="color: var(--text-secondary); margin-bottom: 0.5rem;">Session Time</div>
+        <div class="countdown-time" id="countdownTime">0:00</div>
+    </div>
+
+    <script>
+        let socket = null;
+        let currentSession = null;
+        let countdownInterval = null;
+        let sessionDuration = 0;
+        let sessionStartTime = null;
+        
+        // Metrics tracking
+        let metrics = {
+            waveCount: 0,
+            startTime: null,
+            lastWaveTime: null,
+            contentQuality: [],
+            engagementTimes: [],
+            velocityHistory: [],
+            efficiencyScore: 100
+        };
+        
+        let metricsInterval = null;
+        let dataFlowInterval = null;
+        let dataFlowStats = {
+            postsProcessed: 0,
+            dataPoints: 0,
+            supabaseSaved: 0
+        };
+        
+        // Initialize Socket.IO connection
+        function initSocket() {
+            socket = io('http://localhost:3000');
+            
+            socket.on('connect', () => {
+                console.log('Connected to backend');
+                updateConnectionStatus(true);
+                addLog('Connected to backend successfully', 'success');
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('Disconnected from backend');
+                updateConnectionStatus(false);
+                addLog('Disconnected from backend', 'error');
+            });
+            
+            socket.on('bot-status', (data) => {
+                console.log('🤖 Bot status update:', data);
+                addLog(`Bot Status: ${data.status} - ${data.message || ''}`, 'info');
+                
+                if (data.status === 'started' || data.status === 'running' || 
+                    data.status === 'scrolling' || data.status === 'logged_in') {
+                    if (data.sessionId) {
+                        currentSession = data.sessionId;
+                    }
+                    document.getElementById('startBtn').disabled = true;
+                    document.getElementById('stopBtn').disabled = false;
+                    
+                    if (!metricsInterval) {
+                        startCountdown();
+                        startMetricsTracking();
+                        startDataFlowVisualization();
+                    }
+                }
+                
+                if (data.status === 'stopped' || data.status === 'completed' || 
+                    data.status === 'error') {
+                    currentSession = null;
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = true;
+                    stopCountdown();
+                    stopMetricsTracking();
+                    stopDataFlowVisualization();
+                }
+            });
+            
+            socket.on('content-discovered', (data) => {
+                const content = data.content || data;
+                
+                const creatorName = content.creator || content.creatorUsername || content.creator_username || content.username || 'unknown';
+                const creatorHandle = content.creatorHandle || content.creator_handle || (creatorName !== 'unknown' ? `@${creatorName}` : '@unknown');
+                const captionText = content.caption || content.description || 'No caption';
+                
+                addLog(`📱 Content: ${creatorHandle} - ${captionText.substring(0, 50)}...`, 'success');
+                
+                updateMetricsOnContent(content);
+                
+                if (document.getElementById('dataFlowSection').style.display !== 'none') {
+                    createDataPoint(content);
+                }
+                
+                if (document.getElementById('dataStreamSection').style.display !== 'none') {
+                    createDataStreamItem(content);
+                }
+            });
+            
+            socket.on('bot-started', (data) => {
+                addLog(`Bot started with session: ${data.sessionId}`, 'success');
+                currentSession = data.sessionId;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                
+                startCountdown();
+                startMetricsTracking();
+                startDataFlowVisualization();
+            });
+            
+            socket.on('bot-error', (error) => {
+                const errorMsg = error.message || error.error || 'Unknown error';
+                addLog(`Error: ${errorMsg}`, 'error');
+                
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                currentSession = null;
+            });
+            
+            socket.on('session-complete', (data) => {
+                addLog(`Session complete! Items viewed: ${data.itemsViewed || 0}, Duration: ${Math.round((data.duration || 0) / 1000)}s`, 'success');
+                
+                if (dataFlowStats.supabaseSaved > 0) {
+                    addLog(`✅ Successfully saved ${dataFlowStats.supabaseSaved} posts to Supabase database`, 'success');
+                }
+                
+                currentSession = null;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            });
+        }
+        
+        function updateConnectionStatus(connected) {
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.className = 'status connected';
+                status.innerHTML = '<div class="status-icon"></div><span>Connected</span>';
+                document.getElementById('startBtn').disabled = false;
+            } else {
+                status.className = 'status disconnected';
+                status.innerHTML = '<div class="status-icon"></div><span>Disconnected</span>';
+                document.getElementById('startBtn').disabled = true;
+            }
+        }
+        
+        function startBot() {
+            const platform = document.getElementById('platform').value;
+            const profileType = document.getElementById('profileType').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            const browser = document.getElementById('browser').value;
+            
+            sessionDuration = duration;
+            sessionStartTime = Date.now();
+            
+            addLog(`Starting ${platform} bot for ${profileType} (${duration}s) in ${browser}...`, 'info');
+            
+            socket.emit('start-bot', {
+                platform,
+                profileType,
+                duration: duration * 1000,
+                browser
+            });
+        }
+        
+        function stopBot() {
+            if (currentSession) {
+                addLog('Sending stop command...', 'warning');
+                socket.emit('stop-bot', { sessionId: currentSession });
+            }
+        }
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `
+                <span class="log-time" style="color: var(--text-muted);">${time}</span>
+                <span class="log-message" style="color: ${
+                    type === 'success' ? 'var(--success)' : 
+                    type === 'error' ? 'var(--danger)' : 
+                    type === 'warning' ? 'var(--warning)' : 
+                    'var(--text-primary)'
+                }">${message}</span>
+            `;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            while (log.children.length > 100) {
+                log.removeChild(log.firstChild);
+            }
+        }
+        
+        function startCountdown() {
+            const countdownEl = document.getElementById('countdown');
+            const timeEl = document.getElementById('countdownTime');
+            
+            countdownEl.classList.add('active');
+            
+            countdownInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+                const remaining = Math.max(0, sessionDuration - elapsed);
+                
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                
+                timeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (remaining === 0) {
+                    stopCountdown();
+                }
+            }, 1000);
+        }
+        
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            document.getElementById('countdown').classList.remove('active');
+        }
+        
+        function animateNumber(element, target, suffix = '') {
+            const current = parseInt(element.textContent) || 0;
+            const increment = (target - current) / 20;
+            let step = 0;
+            
+            const animation = setInterval(() => {
+                step++;
+                const value = Math.round(current + (increment * step));
+                element.textContent = value + suffix;
+                
+                if (step >= 20) {
+                    element.textContent = target + suffix;
+                    clearInterval(animation);
+                }
+            }, 50);
+        }
+        
+        function updateMetricsOnContent(content) {
+            metrics.waveCount++;
+            animateNumber(document.getElementById('waveCount'), metrics.waveCount);
+            
+            const trend = metrics.waveCount > 0 ? Math.round((metrics.waveCount / (metrics.waveCount - 1) - 1) * 100) : 0;
+            const trendElement = document.getElementById('waveTrend');
+            trendElement.textContent = `↑ ${Math.abs(trend)}%`;
+            trendElement.className = trend >= 0 ? 'metric-trend up' : 'metric-trend down';
+            
+            if (metrics.lastWaveTime) {
+                const engagementTime = Date.now() - metrics.lastWaveTime;
+                metrics.engagementTimes.push(engagementTime);
+                if (metrics.engagementTimes.length > 20) {
+                    metrics.engagementTimes.shift();
+                }
+            }
+            metrics.lastWaveTime = Date.now();
+            
+            const qualityScore = calculateContentQuality(content);
+            metrics.contentQuality.push(qualityScore);
+            if (metrics.contentQuality.length > 50) {
+                metrics.contentQuality.shift();
+            }
+            
+            updateVelocity();
+            updateEfficiency();
+        }
+        
+        function calculateContentQuality(content) {
+            let score = 50;
+            
+            const likes = content.likes || content.metrics?.likes || 0;
+            const comments = content.comments || content.metrics?.comments || 0;
+            const shares = content.shares || content.metrics?.shares || 0;
+            const caption = content.caption || content.description || '';
+            
+            if (likes > 1000) score += 10;
+            if (likes > 10000) score += 10;
+            if (likes > 100000) score += 10;
+            if (comments > 100) score += 10;
+            if (comments > 1000) score += 10;
+            if (shares > 50) score += 10;
+            if (caption && caption.length > 50) score += 5;
+            if (content.isSponsored === false) score += 5;
+            
+            const views = content.views || content.metrics?.views || likes * 10;
+            if (views > 0) {
+                const engagementRate = ((likes + comments + shares) / views) * 100;
+                if (engagementRate > 5) score += 15;
+                else if (engagementRate > 2) score += 10;
+            }
+            
+            return Math.min(100, score);
+        }
+        
+        function updateVelocity() {
+            if (!metrics.startTime) return;
+            
+            const elapsedMinutes = (Date.now() - metrics.startTime) / 60000;
+            const velocity = elapsedMinutes > 0 ? Math.round(metrics.waveCount / elapsedMinutes) : 0;
+            
+            metrics.velocityHistory.push(velocity);
+            if (metrics.velocityHistory.length > 10) {
+                metrics.velocityHistory.shift();
+            }
+            
+            animateNumber(document.getElementById('surfVelocity'), velocity);
+            
+            if (metrics.velocityHistory.length > 2) {
+                const recent = metrics.velocityHistory.slice(-3).reduce((a, b) => a + b, 0) / 3;
+                const previous = metrics.velocityHistory.slice(-6, -3).reduce((a, b) => a + b, 0) / 3;
+                const trend = recent > previous ? 'up' : 'down';
+                const trendPercent = Math.abs(Math.round(((recent - previous) / previous) * 100));
+                
+                const trendElement = document.getElementById('velocityTrend');
+                trendElement.className = `metric-trend ${trend}`;
+                trendElement.textContent = `${trend === 'up' ? '↑' : '↓'} ${trendPercent}%`;
+            }
+        }
+        
+        function updateEfficiency() {
+            if (metrics.engagementTimes.length < 2) return;
+            
+            const avgEngagement = metrics.engagementTimes.reduce((a, b) => a + b, 0) / metrics.engagementTimes.length;
+            const targetEngagement = 3000;
+            
+            let efficiency = 100;
+            if (avgEngagement < 1000) {
+                efficiency = 60;
+            } else if (avgEngagement > 10000) {
+                efficiency = 70;
+            } else {
+                efficiency = Math.round(100 - Math.abs(avgEngagement - targetEngagement) / 100);
+            }
+            
+            metrics.efficiencyScore = Math.max(0, Math.min(100, efficiency));
+            animateNumber(document.getElementById('efficiencyRating'), metrics.efficiencyScore, '%');
+            
+            const trendElement = document.getElementById('efficiencyTrend');
+            if (efficiency > 85) {
+                trendElement.className = 'metric-trend up';
+                trendElement.textContent = '↑ Optimal';
+            } else if (efficiency > 70) {
+                trendElement.className = 'metric-trend';
+                trendElement.textContent = '→ Good';
+            } else {
+                trendElement.className = 'metric-trend down';
+                trendElement.textContent = '↓ Adjust';
+            }
+        }
+        
+        function updateQualityMetrics() {
+            if (metrics.contentQuality.length === 0) return;
+            
+            const avgQuality = Math.round(
+                metrics.contentQuality.reduce((a, b) => a + b, 0) / metrics.contentQuality.length
+            );
+            
+            animateNumber(document.getElementById('qualityScore'), avgQuality, '%');
+            
+            if (metrics.contentQuality.length > 5) {
+                const recent = metrics.contentQuality.slice(-5).reduce((a, b) => a + b, 0) / 5;
+                const previous = metrics.contentQuality.slice(-10, -5).reduce((a, b) => a + b, 0) / 5;
+                const trend = recent > previous ? 'up' : 'down';
+                const trendPercent = Math.abs(Math.round(((recent - previous) / previous) * 100));
+                
+                const trendElement = document.getElementById('qualityTrend');
+                trendElement.className = `metric-trend ${trend}`;
+                trendElement.textContent = `${trend === 'up' ? '↑' : '↓'} ${trendPercent}%`;
+            }
+        }
+        
+        function startMetricsTracking() {
+            metrics = {
+                waveCount: 0,
+                startTime: Date.now(),
+                lastWaveTime: null,
+                contentQuality: [],
+                engagementTimes: [],
+                velocityHistory: [],
+                efficiencyScore: 100
+            };
+            
+            document.getElementById('metricsSection').style.display = 'block';
+            
+            metricsInterval = setInterval(() => {
+                updateVelocity();
+                updateQualityMetrics();
+            }, 1000);
+        }
+        
+        function stopMetricsTracking() {
+            if (metricsInterval) {
+                clearInterval(metricsInterval);
+                metricsInterval = null;
+            }
+            
+            if (metrics.waveCount > 0) {
+                const avgQuality = metrics.contentQuality.length > 0 
+                    ? Math.round(metrics.contentQuality.reduce((a, b) => a + b, 0) / metrics.contentQuality.length)
+                    : 0;
+                    
+                addLog(`📊 Session Summary: ${metrics.waveCount} waves surfed, ${avgQuality}% avg quality, ${metrics.efficiencyScore}% efficiency`, 'success');
+            }
+        }
+        
+        function createDataPoint(content) {
+            const canvas = document.getElementById('dataFlowCanvas');
+            const point = document.createElement('div');
+            point.className = 'data-point';
+            
+            const topPosition = 20 + Math.random() * 60;
+            point.style.top = `${topPosition}%`;
+            
+            canvas.appendChild(point);
+            
+            setTimeout(() => {
+                point.remove();
+            }, 4000);
+            
+            dataFlowStats.postsProcessed++;
+            dataFlowStats.dataPoints += Object.keys(content).length;
+            
+            document.getElementById('postsProcessed').textContent = dataFlowStats.postsProcessed;
+            document.getElementById('dataPoints').textContent = dataFlowStats.dataPoints;
+        }
+        
+        function createDataStreamItem(content) {
+            const container = document.getElementById('dataStreamContainer');
+            const item = document.createElement('div');
+            item.className = 'data-stream-item';
+            
+            const platform = content.platform || document.getElementById('platform').value;
+            const platformIcon = platform === 'instagram' ? '📷' : '🎵';
+            
+            const creatorName = content.creator || content.creatorUsername || content.creator_username || content.username || 'Unknown';
+            const creatorHandle = content.creatorHandle || content.creator_handle || (creatorName !== 'Unknown' ? `@${creatorName}` : '@unknown');
+            const caption = content.caption || content.description || 'No caption';
+            const hashtags = content.hashtags || [];
+            
+            const likes = content.likes || content.metrics?.likes || 0;
+            const comments = content.comments || content.metrics?.comments || 0;
+            
+            const formatNumber = (num) => {
+                if (!num || isNaN(num)) return '0';
+                if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+                if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+                return num.toString();
+            };
+            
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary);">
+                            ${creatorName} <span style="color: var(--text-secondary);">${creatorHandle}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">${platformIcon} ${platform}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                        <span>❤️ ${formatNumber(likes)}</span>
+                        <span>💬 ${formatNumber(comments)}</span>
+                    </div>
+                </div>
+                <div style="color: var(--text-secondary); margin-bottom: 0.75rem;">
+                    ${caption.substring(0, 150)}${caption.length > 150 ? '...' : ''}
+                </div>
+                ${hashtags.length > 0 ? `
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        ${hashtags.slice(0, 5).map(tag => `
+                            <span style="padding: 0.25rem 0.75rem; background: var(--glass); border: 1px solid var(--border); border-radius: 100px; font-size: 0.75rem; color: var(--primary);">
+                                ${tag}
+                            </span>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            container.insertBefore(item, container.firstChild);
+            
+            const count = container.children.length;
+            document.getElementById('streamCount').textContent = count;
+            
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+            
+            if (Math.random() < 0.8) {
+                setTimeout(() => {
+                    dataFlowStats.supabaseSaved++;
+                    document.getElementById('supabaseSaved').textContent = dataFlowStats.supabaseSaved;
+                }, 500);
+            }
+        }
+        
+        function startDataFlowVisualization() {
+            dataFlowStats = {
+                postsProcessed: 0,
+                dataPoints: 0,
+                supabaseSaved: 0
+            };
+            
+            const platform = document.getElementById('platform').value;
+            document.getElementById('flowSourceIcon').textContent = platform === 'instagram' ? '📷' : '🎵';
+            document.getElementById('flowSourceText').textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+            
+            document.getElementById('dataFlowSection').style.display = 'block';
+            document.getElementById('dataStreamSection').style.display = 'block';
+        }
+        
+        function stopDataFlowVisualization() {
+            if (dataFlowInterval) {
+                clearInterval(dataFlowInterval);
+                dataFlowInterval = null;
+            }
+        }
+        
+        // Initialize on page load
+        window.onload = () => {
+            initSocket();
+        };
+    </script>
+</body>
+</html>

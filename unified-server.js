@@ -254,14 +254,19 @@ app.get('/api/dashboard-data', async (req, res) => {
   }
 });
 
-// Serve the surf bot control board
+// Serve the modern surf bot control board
 app.get('/', (req, res) => {
-  console.log('Serving main page - wavesite-verification.html');
-  res.sendFile(path.join(__dirname, 'wavesite-verification.html'));
+  console.log('Serving main page - wavesite-modern.html');
+  res.sendFile(path.join(__dirname, 'wavesite-modern.html'));
 });
 
 // Also add a direct route to access it
 app.get('/surf', (req, res) => {
+  res.sendFile(path.join(__dirname, 'wavesite-modern.html'));
+});
+
+// Legacy route for the old version
+app.get('/surf-classic', (req, res) => {
   res.sendFile(path.join(__dirname, 'wavesite-verification.html'));
 });
 
