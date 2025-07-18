@@ -325,10 +325,11 @@ class InstagramBotSimple extends BotBase {
   
   async extractPostData(postElement) {
     const data = {
+      platform: 'instagram',
       contentId: '',
       contentType: 'post',
-      creatorUsername: '',
-      creatorHandle: '',
+      creatorUsername: 'Unknown',
+      creatorHandle: '@unknown',
       caption: '',
       hashtags: [],
       thumbnailUrl: '',
@@ -337,69 +338,251 @@ class InstagramBotSimple extends BotBase {
         comments: 0,
         shares: 0,
         saves: 0
-      }
+      },
+      timestamp: new Date().toISOString()
     };
     
     try {
       // Extract post ID
       data.contentId = await this.extractPostId(postElement);
       
-      // Extract creator username
-      const usernameElement = await postElement.$('header a[role="link"] span');
-      if (usernameElement) {
-        data.creatorUsername = await usernameElement.innerText();
-      }
-      
-      // Also try to get the @ handle if different
-      const handleElement = await postElement.$('header a[role="link"]');
-      if (handleElement) {
-        const href = await handleElement.getAttribute('href');
-        if (href) {
-          // Extract handle from URL like /username/
-          const match = href.match(/\/([^\/]+)\/?$/);
-          if (match) {
-            data.creatorHandle = match[1];
+      // Use evaluate for more robust data extraction
+      const extractedData = await postElement.evaluate((article) => {
+        const result = {
+          username: 'Unknown',
+          handle: '@unknown',
+          caption: '',
+          thumbnailUrl: '',
+          likes: 0,
+          comments: 0,
+          shares: 0,
+          views: 0,
+          location: null,
+          music: null,
+          isVideo: false,
+          isReel: false,
+          postType: 'post',
+          timestamp: null,
+          allText: []
+        };
+        
+        // Collect ALL text content for debugging
+        const allTextElements = article.querySelectorAll('*');
+        allTextElements.forEach(el => {
+          const text = el.textContent?.trim();
+          if (text && text.length > 0 && text.length < 200) {
+            result.allText.push(text);
+          }
+        });
+        
+        // Enhanced username extraction
+        const userSelectors = [
+          'header h2 a',
+          'header a[role="link"] span',
+          'header a span:first-child',
+          'h2 a span',
+          'header span[dir="auto"]',
+          'a[href^="/"] span'
+        ];
+        
+        for (const selector of userSelectors) {
+          const userEl = article.querySelector(selector);
+          if (userEl && userEl.textContent) {
+            const text = userEl.textContent.trim();
+            if (text && !text.includes('Follow') && !text.includes('More') && text.length > 0) {
+              result.username = text;
+              // Try to get handle from parent link
+              const parentLink = userEl.closest('a[href]');
+              if (parentLink && parentLink.href) {
+                const match = parentLink.href.match(/instagram\.com\/([^\/\?]+)/);
+                if (match && match[1] !== 'p' && match[1] !== 'explore') {
+                  result.handle = match[1];
+                }
+              }
+              break;
+            }
           }
         }
-      }
-      
-      // If no separate handle found, use username
-      if (!data.creatorHandle && data.creatorUsername) {
-        data.creatorHandle = data.creatorUsername;
-      }
-      
-      // Extract caption and hashtags
-      const captionElements = await postElement.$$('h1');
-      if (captionElements.length > 0) {
-        data.caption = await captionElements[0].innerText();
-        // Extract hashtags from caption
-        data.hashtags = this.extractHashtags(data.caption);
-      }
-      
-      // Extract thumbnail URL
-      const imgElement = await postElement.$('img[srcset]');
-      if (imgElement) {
-        data.thumbnailUrl = await imgElement.getAttribute('src');
-      }
-      
-      // Extract metrics - Instagram hides exact counts sometimes
-      // Look for like button and its text
-      const likeSection = await postElement.$('section > div > div');
-      if (likeSection) {
-        const likeText = await likeSection.innerText();
-        if (likeText.includes('like')) {
-          data.metrics.likes = this.parseMetricValue(likeText);
+        
+        // Get post type (photo, video, reel)
+        const video = article.querySelector('video');
+        const reelIcon = article.querySelector('svg[aria-label*="Reel"]');
+        if (video) {
+          result.isVideo = true;
+          result.postType = reelIcon ? 'reel' : 'video';
         }
+        
+        // Enhanced caption extraction
+        const captionSelectors = [
+          'h1',
+          'span[dir="auto"]',
+          'div[role="button"] span',
+          'span:has(a[href*="/tags/"])'
+        ];
+        
+        for (const selector of captionSelectors) {
+          const elements = article.querySelectorAll(selector);
+          for (const el of elements) {
+            const text = el.textContent?.trim();
+            if (text && text.length > 20 && !text.includes('Follow') && 
+                !text.includes('Like') && !text.includes('Comment')) {
+              result.caption = text;
+              break;
+            }
+          }
+          if (result.caption) break;
+        }
+        
+        // Enhanced thumbnail extraction
+        const imgSelectors = [
+          'img[srcset]',
+          'img[src*="instagram"]',
+          'video[poster]'
+        ];
+        
+        for (const selector of imgSelectors) {
+          const el = article.querySelector(selector);
+          if (el) {
+            if (selector === 'video[poster]') {
+              result.thumbnailUrl = el.poster;
+            } else {
+              result.thumbnailUrl = el.src || el.srcset?.split(' ')[0];
+            }
+            break;
+          }
+        }
+        
+        // Enhanced metrics extraction
+        const metricPatterns = {
+          likes: /(\d+(?:,\d+)*(?:\.\d+)?[KMB]?)\s*(?:likes?|others?)/i,
+          comments: /(\d+(?:,\d+)*(?:\.\d+)?[KMB]?)\s*comments?/i,
+          views: /(\d+(?:,\d+)*(?:\.\d+)?[KMB]?)\s*views?/i,
+          plays: /(\d+(?:,\d+)*(?:\.\d+)?[KMB]?)\s*plays?/i
+        };
+        
+        // Search all text for metrics
+        result.allText.forEach(text => {
+          Object.entries(metricPatterns).forEach(([metric, pattern]) => {
+            const match = text.match(pattern);
+            if (match) {
+              const value = match[1].replace(/,/g, '');
+              let num = parseFloat(value);
+              if (value.includes('K')) num *= 1000;
+              if (value.includes('M')) num *= 1000000;
+              if (value.includes('B')) num *= 1000000000;
+              result[metric] = Math.floor(num);
+            }
+          });
+        });
+        
+        // Get timestamp from time element
+        const timeEl = article.querySelector('time');
+        if (timeEl) {
+          result.timestamp = timeEl.getAttribute('datetime') || timeEl.textContent;
+        }
+        
+        // Get location
+        const locationLink = article.querySelector('a[href*="/explore/locations/"]');
+        if (locationLink) {
+          result.location = locationLink.textContent.trim();
+        }
+        
+        // Get music/audio (for reels)
+        const audioLinks = article.querySelectorAll('a[href*="/reels/audio/"], a[href*="/music/"]');
+        audioLinks.forEach(link => {
+          const text = link.textContent?.trim();
+          if (text && text.length > 0) {
+            result.music = text;
+          }
+        });
+        
+        // Get all links for debugging
+        const links = article.querySelectorAll('a[href]');
+        result.links = Array.from(links).map(link => ({
+          href: link.href,
+          text: link.textContent?.trim()
+        })).filter(l => l.text);
+        
+        return result;
+      });
+      
+      // Debug: Log what we found
+      console.log('RAW EXTRACTED DATA:', {
+        username: extractedData.username,
+        handle: extractedData.handle,
+        caption: extractedData.caption?.substring(0, 50),
+        likes: extractedData.likes,
+        views: extractedData.views,
+        postType: extractedData.postType,
+        allTextSample: extractedData.allText.slice(0, 5)
+      });
+      
+      // Apply extracted data
+      if (extractedData.username !== 'Unknown') {
+        data.creatorUsername = extractedData.username;
+        data.creator = extractedData.username; // Add this field too
       }
       
-      // Try to find comment count
-      const viewCommentsLink = await postElement.$('a[href*="/comments/"]');
-      if (viewCommentsLink) {
-        const commentText = await viewCommentsLink.innerText();
-        if (commentText.includes('comment')) {
-          data.metrics.comments = this.parseMetricValue(commentText);
-        }
+      if (extractedData.handle !== '@unknown') {
+        data.creatorHandle = `@${extractedData.handle}`;
+        data.creator_handle = extractedData.handle; // Add alternative field name
+      } else if (data.creatorUsername !== 'Unknown') {
+        // Fallback: use username as handle
+        data.creatorHandle = `@${data.creatorUsername}`;
+        data.creator_handle = data.creatorUsername;
       }
+      
+      // Set content type
+      data.contentType = extractedData.postType || 'post';
+      
+      if (extractedData.caption) {
+        data.caption = extractedData.caption;
+        data.hashtags = this.extractHashtags(extractedData.caption);
+      }
+      
+      if (extractedData.thumbnailUrl) {
+        data.thumbnailUrl = extractedData.thumbnailUrl;
+      }
+      
+      // Apply all metrics
+      if (extractedData.likes > 0) {
+        data.metrics.likes = extractedData.likes;
+      }
+      if (extractedData.comments > 0) {
+        data.metrics.comments = extractedData.comments;
+      }
+      if (extractedData.shares > 0) {
+        data.metrics.shares = extractedData.shares;
+      }
+      if (extractedData.views > 0) {
+        data.metrics.views = extractedData.views;
+      }
+      
+      if (extractedData.location) {
+        data.location = extractedData.location;
+      }
+      
+      if (extractedData.music) {
+        data.music = extractedData.music;
+      }
+      
+      if (extractedData.timestamp) {
+        data.postedAt = extractedData.timestamp;
+      }
+      
+      // Add both field variations to ensure compatibility
+      data.likes = data.metrics.likes;
+      data.comments = data.metrics.comments;
+      data.shares = data.metrics.shares;
+      data.views = data.metrics.views;
+      
+      this.logger.info('Extracted post data:', {
+        username: data.creatorUsername,
+        handle: data.creatorHandle,
+        caption: data.caption.substring(0, 50) + '...',
+        metrics: data.metrics,
+        type: data.contentType
+      });
       
     } catch (error) {
       this.logger.debug('Error extracting post data:', error);

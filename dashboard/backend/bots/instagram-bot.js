@@ -40,9 +40,11 @@ class InstagramBot {
             // Set up event handlers
             this.setupEventHandlers();
             
-            // Initialize and start bot
-            await this.bot.initialize();
-            await this.bot.run();
+            // Start bot (initialize is called inside start)
+            await this.bot.start({
+                duration: this.session.duration,
+                scrollFeed: true
+            });
             
         } catch (error) {
             console.error('Instagram bot error:', error);

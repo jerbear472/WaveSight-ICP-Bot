@@ -71,3 +71,17 @@ build/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Debug files
+debug/
+*.png
+*.jpg
+*.jpeg
+
+# Server logs
+server.log
+unified-server.log
+
+# Session data
+sessions/
+*.session

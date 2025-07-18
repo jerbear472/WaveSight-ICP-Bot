@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICPScope - Enhanced UI Showcase</title>
+    
+    <!-- Original Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Enhanced Styles -->
+    <link rel="stylesheet" href="styles-enhanced.css">
+    <link rel="stylesheet" href="button-effects.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-container">
+                <div class="logo-section">
+                    <h1 class="brand-name">ICPSCOPE</h1>
+                    <p class="main-tagline">Enhanced UI Components</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Button Showcase -->
+            <section class="showcase-section">
+                <h2>Enhanced Button Styles</h2>
+                
+                <div class="button-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <!-- Primary Buttons -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Primary Actions</h3>
+                        <button class="btn-primary">
+                            <span>Start Analysis</span>
+                        </button>
+                        <button class="refresh-btn" style="margin-top: 1rem;">
+                            <span class="icon">🔄</span>
+                            <span>Refresh Data</span>
+                        </button>
+                    </div>
+
+                    <!-- Neon Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Neon Effect</h3>
+                        <button class="btn-neon">
+                            Launch Bot
+                        </button>
+                    </div>
+
+                    <!-- Liquid Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Liquid Effect</h3>
+                        <button class="btn-liquid">
+                            <span>Discover Trends</span>
+                        </button>
+                    </div>
+
+                    <!-- Glitch Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Glitch Effect</h3>
+                        <button class="btn-glitch" data-text="ANALYZE">
+                            ANALYZE
+                        </button>
+                    </div>
+
+                    <!-- 3D Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">3D Effect</h3>
+                        <button class="btn-3d">
+                            Export Data
+                        </button>
+                    </div>
+
+                    <!-- Holographic Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Holographic</h3>
+                        <button class="btn-holographic">
+                            Premium
+                        </button>
+                    </div>
+
+                    <!-- Cyberpunk Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Cyberpunk</h3>
+                        <button class="btn-cyberpunk">
+                            Hack Feed
+                        </button>
+                    </div>
+
+                    <!-- Glass Button -->
+                    <div class="button-group-showcase">
+                        <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Frosted Glass</h3>
+                        <button class="btn-glass">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Form Controls Showcase -->
+            <section class="showcase-section" style="margin-top: 4rem;">
+                <h2>Enhanced Form Controls</h2>
+                
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <!-- Select Dropdown -->
+                    <div class="control-group">
+                        <label>Platform Selection</label>
+                        <select>
+                            <option>Instagram</option>
+                            <option>TikTok</option>
+                            <option>All Platforms</option>
+                        </select>
+                    </div>
+
+                    <!-- Text Input -->
+                    <div class="control-group">
+                        <label>Campaign Name</label>
+                        <input type="text" placeholder="Enter campaign name..." />
+                    </div>
+
+                    <!-- Toggle Switch -->
+                    <div class="control-group">
+                        <label>Auto-refresh</label>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card Showcase -->
+            <section class="showcase-section" style="margin-top: 4rem;">
+                <h2>Enhanced Cards</h2>
+                
+                <div class="overview-grid" style="margin-top: 2rem;">
+                    <!-- Metric Card -->
+                    <div class="overview-card card-hover-glow">
+                        <div class="card-header">
+                            <h3>Total Impressions</h3>
+                            <span class="icon">📊</span>
+                        </div>
+                        <div class="card-content">
+                            <p class="metric-value">1.2M</p>
+                            <p class="metric-change positive">↑ 23.5% from last week</p>
+                        </div>
+                    </div>
+
+                    <!-- Status Card -->
+                    <div class="overview-card card-hover-glow">
+                        <div class="card-header">
+                            <h3>Bot Status</h3>
+                            <span class="icon">🤖</span>
+                        </div>
+                        <div class="card-content">
+                            <p class="metric-value">Active</p>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                                <span class="status-indicator"></span>
+                                <span class="text-secondary">3 bots running</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Engagement Card -->
+                    <div class="overview-card card-hover-glow">
+                        <div class="card-header">
+                            <h3>Engagement Rate</h3>
+                            <span class="icon">💫</span>
+                        </div>
+                        <div class="card-content">
+                            <p class="metric-value">4.8%</p>
+                            <p class="metric-change neutral">→ Stable performance</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Badge & Progress Showcase -->
+            <section class="showcase-section" style="margin-top: 4rem;">
+                <h2>Badges & Progress</h2>
+                
+                <div style="margin-top: 2rem;">
+                    <!-- Badges -->
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+                        <span class="badge badge-primary">Trending</span>
+                        <span class="badge badge-success">Active</span>
+                        <span class="badge badge-warning">Pending</span>
+                        <span class="badge badge-error">Critical</span>
+                    </div>
+
+                    <!-- Progress Bars -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 500px;">
+                        <div>
+                            <label style="color: var(--text-secondary); font-size: 0.875rem;">Analysis Progress</label>
+                            <div class="progress-bar" style="margin-top: 0.5rem;">
+                                <div class="progress-bar-fill" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <label style="color: var(--text-secondary); font-size: 0.875rem;">Data Collection</label>
+                            <div class="progress-bar" style="margin-top: 0.5rem;">
+                                <div class="progress-bar-fill" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Demo -->
+            <section class="showcase-section" style="margin-top: 4rem; margin-bottom: 4rem;">
+                <h2>Interactive Demo</h2>
+                
+                <div class="demo-card" style="background: var(--card-background); border: 1px solid var(--border-color); border-radius: 1rem; padding: 2rem; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1.5rem;">Try the Enhanced Features</h3>
+                    
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="setButtonLoading(this, true); setTimeout(() => setButtonLoading(this, false), 2000)">
+                            Test Loading
+                        </button>
+                        
+                        <button class="btn-primary" onclick="showButtonSuccess(this)">
+                            Test Success
+                        </button>
+                        
+                        <button class="btn-liquid" data-tooltip="This button has particle effects!">
+                            <span>Hover Me</span>
+                        </button>
+                        
+                        <button class="btn-neon btn-magnetic">
+                            Magnetic
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Floating Action Button -->
+        <button class="fab">+</button>
+    </div>
+
+    <!-- Enhanced Interactions Script -->
+    <script src="enhanced-interactions.js"></script>
+    
+    <!-- Additional Demo Scripts -->
+    <script>
+        // Demo notification
+        setTimeout(() => {
+            const notification = document.createElement('div');
+            notification.className = 'notification success show';
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-message">
+                        <div class="notification-title">UI Enhanced</div>
+                        <div class="notification-text">All systems operational with premium effects</div>
+                    </div>
+                    <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            let container = document.querySelector('.notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'notification-container';
+                document.body.appendChild(container);
+            }
+            
+            container.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }, 1000);
+    </script>
+</body>
+</html>

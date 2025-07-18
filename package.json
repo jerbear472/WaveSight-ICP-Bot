@@ -1,28 +1,21 @@
 {
-  "name": "icpscope",
-  "version": "1.0.0",
-  "description": "ICP Bot Monitoring System - Track what your ideal customers see on social platforms",
-  "main": "index.js",
+  "name": "wavesite",
+  "version": "1.1.0",
+  "description": "WaveSite - Advanced social media intelligence platform with AI-powered bot automation",
+  "main": "unified-server.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
-    "start": "node index.js",
-    "start:frontend": "node render-deploy.js",
-    "start:backend": "node start-backend.js",
-    "dev": "nodemon dashboard/server.js",
+    "start": "node unified-server.js",
+    "dev": "nodemon unified-server.js",
     "build": "npx playwright install chromium && echo 'Build complete'",
     "test": "jest",
-    "orchestrator": "node bot-engine/orchestrator.js",
-    "bot:instagram": "node bot-engine/instagram-bot.js",
+    "bot:instagram": "node bot-engine/instagram-bot-simple.js",
     "bot:tiktok": "node bot-engine/tiktok-bot.js",
-    "analytics": "node analytics/trend-processor.js",
-    "dashboard": "node dashboard/server.js",
-    "demo": "node dashboard/demo-server.js",
-    "start:all": "node start-servers.js",
-    "monitor": "node monitor-servers.js",
-    "status": "node check-status.js",
-    "stop:all": "lsof -ti:3000,3001 | xargs kill -9 2>/dev/null || true"
+    "stop": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true",
+    "logs": "tail -f server.log",
+    "clean": "rm -rf node_modules package-lock.json && npm install"
   },
   "keywords": [
     "icp",

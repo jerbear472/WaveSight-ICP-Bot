@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test WebSocket Connection</title>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <button onclick="testBot()">Test Start Bot</button>
+    <div id="log"></div>
+    
+    <script>
+        const socket = io('http://localhost:3000');
+        
+        socket.on('connect', () => {
+            document.getElementById('status').innerHTML = '✅ Connected! Socket ID: ' + socket.id;
+            console.log('Connected to server');
+        });
+        
+        socket.on('disconnect', () => {
+            document.getElementById('status').innerHTML = '❌ Disconnected';
+            console.log('Disconnected from server');
+        });
+        
+        socket.on('bot-started', (data) => {
+            addLog('Bot started: ' + JSON.stringify(data));
+        });
+        
+        socket.on('bot-status', (data) => {
+            addLog('Bot status: ' + JSON.stringify(data));
+        });
+        
+        socket.on('bot-error', (data) => {
+            addLog('Bot error: ' + JSON.stringify(data));
+        });
+        
+        function testBot() {
+            console.log('Sending start-bot event');
+            socket.emit('start-bot', {
+                platform: 'instagram',
+                profileType: 'gen-z-tech-enthusiast',
+                duration: 30000,
+                browser: 'chrome'
+            });
+        }
+        
+        function addLog(msg) {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+            log.appendChild(entry);
+        }
+    </script>
+</body>
+</html>

@@ -254,9 +254,20 @@ app.get('/api/dashboard-data', async (req, res) => {
   }
 });
 
-// Serve the WaveSight dashboard HTML
+// Serve the surf bot control board
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'wavesight-dashboard.html'));
+  console.log('Serving main page - wavesite-verification.html');
+  res.sendFile(path.join(__dirname, 'wavesite-verification.html'));
+});
+
+// Also add a direct route to access it
+app.get('/surf', (req, res) => {
+  res.sendFile(path.join(__dirname, 'wavesite-verification.html'));
+});
+
+// Test connection page
+app.get('/test', (req, res) => {
+  res.sendFile(path.join(__dirname, 'test-connection.html'));
 });
 
 // Serve dashboard JS files
@@ -273,10 +284,7 @@ app.get('/logo2.png', (req, res) => {
   res.sendFile(path.join(__dirname, 'logo2.png'));
 });
 
-// Fallback to dashboard for any other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'wavesight-dashboard.html'));
-});
+// Removed fallback route to allow main route to work properly
 
 // Start server
 const PORT = process.env.PORT || 3000;
