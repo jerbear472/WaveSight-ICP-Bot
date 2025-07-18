@@ -378,49 +378,63 @@
             gap: 12px;
         }
 
-        .activity-feed-items {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .feed-item {
-            display: flex;
-            gap: 12px;
-            padding: 12px;
+        /* Activity Log - Matching Verification Page */
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
+            padding: 16px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .log-entry {
             margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
             transition: all 0.2s;
         }
-
-        .feed-item:hover {
+        
+        .log-entry:hover {
             background: rgba(255, 255, 255, 0.05);
         }
+        
+        .log-entry.info {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+        
+        .log-entry.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--success);
+        }
+        
+        .log-entry.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--error);
+        }
+        
+        .log-entry.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--warning);
+        }
 
-        .feed-time {
-            font-size: 12px;
+        .log-time {
             color: var(--text-secondary);
-            min-width: 60px;
+            font-size: 11px;
+            min-width: 80px;
+            font-family: 'Monaco', 'Courier New', monospace;
         }
 
-        .feed-icon {
-            font-size: 20px;
-        }
-
-        .feed-content {
-            flex: 1;
-        }
-
-        .feed-message {
-            font-size: 14px;
+        .log-message {
             color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .feed-details {
-            font-size: 12px;
-            color: var(--text-secondary);
+            flex: 1;
         }
 
         /* Scrollbar */
@@ -585,15 +599,15 @@
             </div>
         </div>
 
-        <!-- Activity Feed -->
+        <!-- Activity Log (Matching Verification Page) -->
         <div class="activity-feed">
             <div class="feed-header">
-                <span>📊</span> Live Activity Feed
+                <span>📊</span> Activity Log
             </div>
-            <div class="activity-feed-items" id="activityFeed"></div>
+            <div class="log" id="log"></div>
         </div>
     </div>
 
-    <script src="dashboard-simple.js"></script>
+    <script src="wavesight-dashboard.js"></script>
 </body>
 </html>

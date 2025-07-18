@@ -259,9 +259,13 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'wavesight-dashboard.html'));
 });
 
-// Serve dashboard JS
+// Serve dashboard JS files
 app.get('/dashboard-simple.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard/public/dashboard-simple.js'));
+});
+
+app.get('/wavesight-dashboard.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard/public/wavesight-dashboard.js'));
 });
 
 // Serve logo
