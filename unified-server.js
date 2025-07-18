@@ -254,14 +254,24 @@ app.get('/api/dashboard-data', async (req, res) => {
   }
 });
 
-// Serve the dashboard HTML
+// Serve the WaveSight dashboard HTML
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard/public/dashboard-simple.html'));
+  res.sendFile(path.join(__dirname, 'wavesight-dashboard.html'));
+});
+
+// Serve dashboard JS
+app.get('/dashboard-simple.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard/public/dashboard-simple.js'));
+});
+
+// Serve logo
+app.get('/logo2.png', (req, res) => {
+  res.sendFile(path.join(__dirname, 'logo2.png'));
 });
 
 // Fallback to dashboard for any other routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dashboard/public/dashboard-simple.html'));
+  res.sendFile(path.join(__dirname, 'wavesight-dashboard.html'));
 });
 
 // Start server
