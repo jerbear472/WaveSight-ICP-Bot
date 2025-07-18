@@ -121,6 +121,24 @@ io.on('connection', (socket) => {
 
 // REST API endpoints
 
+// Health check
+app.get('/', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'WaveSight Bot Backend',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'WaveSight Bot Backend',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Get bot sessions
 app.get('/api/sessions', async (req, res) => {
   try {
