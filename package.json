@@ -43,7 +43,8 @@
     "playwright": "^1.40.0",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1",
-    "user-agents": "^1.0.1456"
+    "user-agents": "^1.0.1456",
+    "faker": "^5.5.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
